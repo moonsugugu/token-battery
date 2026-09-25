@@ -103,6 +103,7 @@ function crewCard(s) {
     <div class="crewcard ${s} st-${st}" ${!d && s === 'claude' ? 'data-act="login"' : ''}>
       <div class="portrait">
         <span class="speech">${bubble}</span>
+        ${drawHeroSprite(theme, s, st)}
         <div class="avatar">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888')}</div>
         <span class="stbadge ${bCls}">${bIcon}</span>
       </div>

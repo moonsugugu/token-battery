@@ -470,16 +470,16 @@
 }
 
 /* Generated, theme-specific hero art: one continuous scene across the Claude/Codex pair. */
-.theme-cyber { --crew-art: url("crew-scenes/cyber.png"); }
-.theme-engine { --crew-art: url("crew-scenes/engine.png"); }
-.theme-mascot { --crew-art: url("crew-scenes/mascot.png"); }
-.theme-arcade { --crew-art: url("crew-scenes/arcade.png"); }
-.theme-glass { --crew-art: url("crew-scenes/glass.png"); }
-.theme-crt { --crew-art: url("crew-scenes/crt.png"); }
-.theme-industrial { --crew-art: url("crew-scenes/industrial.png"); }
-.theme-garden { --crew-art: url("crew-scenes/garden.png"); }
-.theme-anime { --crew-art: url("crew-scenes/anime.png"); }
-.theme-editorial { --crew-art: url("crew-scenes/editorial.png"); }
+.theme-cyber { --crew-art: url("crew-scenes-static/cyber.png"); }
+.theme-engine { --crew-art: url("crew-scenes-static/engine.png"); }
+.theme-mascot { --crew-art: url("crew-scenes-static/mascot.png"); }
+.theme-arcade { --crew-art: url("crew-scenes-static/arcade.png"); }
+.theme-glass { --crew-art: url("crew-scenes-static/glass.png"); }
+.theme-crt { --crew-art: url("crew-scenes-static/crt.png"); }
+.theme-industrial { --crew-art: url("crew-scenes-static/industrial.png"); }
+.theme-garden { --crew-art: url("crew-scenes-static/garden.png"); }
+.theme-anime { --crew-art: url("crew-scenes-static/anime.png"); }
+.theme-editorial { --crew-art: url("crew-scenes-static/editorial.png"); }
 
 .card.full .crew {
   --cast-stage-height: 210px;
@@ -527,11 +527,50 @@
   display: none;
 }
 
+.usage-sprite {
+  --sprite-column: 0%;
+  display: block;
+  position: absolute;
+  inset: 0;
+  background-image: var(--sprite-image);
+  background-repeat: no-repeat;
+  background-size: 500% 200%;
+  background-position-x: var(--sprite-column);
+  background-position-y: 0%;
+  animation: usage-sprite-idle 4.2s steps(1, end) infinite;
+  pointer-events: none;
+}
+
+.usage-sprite.st-fresh { --sprite-column: 0%; }
+.usage-sprite.st-ok,
+.usage-sprite.st-none { --sprite-column: 25%; }
+.usage-sprite.st-tired { --sprite-column: 50%; }
+.usage-sprite.st-dizzy { --sprite-column: 75%; }
+.usage-sprite.st-sleep { --sprite-column: 100%; }
+
+@keyframes usage-sprite-idle {
+  0%, 46%, 100% { background-position-y: 0%; }
+  50%, 96% { background-position-y: 100%; }
+}
+
+.card.full .crewcard .portrait .stage-sprite {
+  z-index: 2;
+  inset: 0 0 6px;
+  left: 50%;
+  width: min(94%, 178px);
+  height: auto;
+  transform: translateX(-50%);
+  background-size: 500% 200%;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .28));
+}
+
 .card.char .actor .avatar .artchar {
+  position: relative;
   display: block;
   width: 100%;
   height: 100%;
   border-radius: 10px;
+  overflow: hidden;
   background-image: var(--crew-art);
   background-repeat: no-repeat;
   background-size: 200% 100%;
@@ -540,9 +579,11 @@
 
 .card.char .actor .avatar .artchar-claude { background-position: left center; }
 .card.char .actor .avatar .artchar-codex { background-position: right center; }
-.card.char .actor.st-tired .artchar { filter: saturate(.82) brightness(.96); }
-.card.char .actor.st-dizzy .artchar { animation: wobble 1.2s ease-in-out infinite; }
-.card.char .actor.st-sleep .artchar { filter: saturate(.68) brightness(.9); }
+.card.char .actor .artchar .usage-sprite { border-radius: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  .usage-sprite { animation: none !important; background-position-y: 0%; }
+}
 
 @media (max-height: 680px) {
   .card.full .crew { --cast-stage-height: 150px; }

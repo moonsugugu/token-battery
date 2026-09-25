@@ -217,5 +217,12 @@ function drawCharacter(theme, svc, state) {
   const safeTheme = CAST[theme] ? theme : 'cyber';
   const safeSvc = svc === 'codex' ? 'codex' : 'claude';
   const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
-  return `<span class="artchar artchar-${safeTheme} artchar-${safeSvc} st-${safeState}" aria-hidden="true"></span>`;
+  return `<span class="artchar artchar-${safeTheme} artchar-${safeSvc} st-${safeState}" aria-hidden="true"><span class="usage-sprite st-${safeState}" style="--sprite-image:url('crew-animation/${safeTheme}-${safeSvc}.png')"></span></span>`;
+}
+
+function drawHeroSprite(theme, svc, state) {
+  const safeTheme = CAST[theme] ? theme : 'cyber';
+  const safeSvc = svc === 'codex' ? 'codex' : 'claude';
+  const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
+  return `<span class="stage-sprite usage-sprite st-${safeState}" style="--sprite-image:url('crew-animation/${safeTheme}-${safeSvc}.png')" aria-hidden="true"></span>`;
 }
