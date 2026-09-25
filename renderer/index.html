@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=VT323&family=Press+Start+2P&family=Jua&family=Do+Hyeon&family=Gowun+Dodum&family=Noto+Serif+KR:wght@500;800&display=swap">
+<title>AI Crew</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="mode-mini theme-cyber">
+
+<!-- ===== 미니 모드 (기본) ===== -->
+<div class="card mini" id="miniCard">
+  <div class="mini-rows" id="miniRows"></div>
+  <div class="ctrl ctrl-grid">
+    <button class="icon" data-go="settings" data-i18n-title="settings">⚙</button>
+    <button class="icon" data-go="full" data-i18n-title="expand">⤢</button>
+    <button class="icon" data-go="char" data-i18n-title="charMode">☺</button>
+    <button class="icon" data-go="hide" data-i18n-title="hide">✕</button>
+  </div>
+  <div class="grip gl" data-grip="left" data-i18n-title="resize"></div><div class="grip gr" data-grip="right" data-i18n-title="resize"></div>
+</div>
+
+<!-- ===== 캐릭터 모드 ===== -->
+<div class="card char" id="charCard">
+  <div class="ctrl ctrl-row">
+    <button class="icon" data-go="settings" data-i18n-title="settings">⚙</button>
+    <button class="icon" data-go="full" data-i18n-title="expand">⤢</button>
+    <button class="icon" data-go="mini" data-i18n-title="mini">▭</button>
+    <button class="icon" data-go="hide" data-i18n-title="hide">✕</button>
+  </div>
+  <div class="scene" id="scene"></div>
+  <div class="grip gl" data-grip="left" data-i18n-title="resize"></div><div class="grip gr" data-grip="right" data-i18n-title="resize"></div>
+</div>
+
+<!-- ===== 전체 모드 (AI CREW) ===== -->
+<div class="card full" id="card">
+  <header class="titlebar">
+    <span class="logo" id="themeLogo"></span>
+    <div class="tt"><span class="title">AI CREW</span><span class="tsub" id="themeSub"></span></div>
+    <span class="vsep"></span>
+    <span class="sync"><span data-i18n="sync"></span> <b id="syncTime">--:--</b><i class="dot"></i></span>
+    <span class="spacer"></span>
+    <button class="hbtn" id="btnMusic" data-i18n-title="bgmPlay">♫</button>
+    <button class="hbtn" id="btnSettings" data-i18n-title="settings">⚙</button>
+    <div class="ctrl ctrl-row hdr">
+      <button class="icon" id="btnRefresh" data-i18n-title="refresh">⟳</button>
+      <button class="icon" data-go="char" data-i18n-title="charMode">☺</button>
+      <button class="icon" data-go="mini" data-i18n-title="mini">▭</button>
+      <button class="icon" data-go="hide" data-i18n-title="hide">✕</button>
+    </div>
+  </header>
+
+  <!-- 설정 -->
+  <section class="panel settings hidden" id="settings">
+    <label class="row"><span data-i18n="lang"></span> <select id="langSel"></select></label>
+    <label class="row"><span data-i18n="theme"></span> <select id="themeSel"></select></label>
+    <div class="row"><span data-i18n="show"></span>
+      <label><input type="checkbox" id="showClaude"> Claude</label>
+      <label><input type="checkbox" id="showCodex"> Codex</label>
+    </div>
+    <div class="row"><span data-i18n="basisLbl"></span>
+      <label><input type="radio" name="basis" value="remain" id="basisRemain"> <span data-i18n="basisRemain"></span></label>
+      <label><input type="radio" name="basis" value="used" id="basisUsed"> <span data-i18n="basisUsed"></span></label>
+    </div>
+    <div class="row wrap"><span data-i18n="features"></span>
+      <label><input type="checkbox" id="optAlerts"> <span data-i18n="alerts"></span></label>
+      <label><input type="checkbox" id="optCost"> <span data-i18n="cost"></span></label>
+    </div>
+    <div class="row indent" id="alertLevelsRow">
+      <label><input type="checkbox" class="lvl" value="70"> 70%</label>
+      <label><input type="checkbox" class="lvl" value="85"> 85%</label>
+      <label><input type="checkbox" class="lvl" value="95"> 95%</label>
+    </div>
+    <div class="row"><span data-i18n="hotkeys"></span> <span class="smeta" data-i18n="hkHint"></span></div>
+    <div class="row indent"><span class="lbl" data-i18n="hkToggle"></span><button class="chip hk" data-hk="toggle"></button></div>
+    <div class="row indent"><span class="lbl" data-i18n="hkFull"></span><button class="chip hk" data-hk="full"></button></div>
+    <div class="note" id="hkMsg"></div>
+    <label class="row"><span data-i18n="opacity"></span> <input type="range" id="opacity" min="0.4" max="1" step="0.02"></label>
+    <label class="row"><input type="checkbox" id="autostart"> <span data-i18n="autostart"></span></label>
+    <div class="row">
+      <button class="chip" id="btnClaudeLogin2" data-i18n="claudeLogin"></button>
+      <button class="chip" id="btnManual2" data-i18n="claudeManual"></button>
+    </div>
+  </section>
+
+  <!-- 오늘의 상태 -->
+  <div class="sechead">
+    <h2 data-i18n="today"></h2>
+    <span class="rule"></span>
+    <span class="daymsg" id="dayMsg"></span>
+  </div>
+  <div class="crew" id="crew"></div>
+  <div class="note crew-note" id="claudeNote"></div>
+  <form class="panel manual hidden" id="manualForm">
+    <div class="mgrid">
+      <label><span data-i18n="m5"></span><input type="number" min="0" max="100" id="m5"></label>
+      <label><span data-i18n="m5r"></span><input type="datetime-local" id="m5r"></label>
+      <label><span data-i18n="mw"></span><input type="number" min="0" max="100" id="mw"></label>
+      <label><span data-i18n="mwr"></span><input type="datetime-local" id="mwr"></label>
+    </div>
+    <div class="row end">
+      <button type="button" class="chip ghost" id="btnOpenClaudeUsage" data-i18n="openUsage"></button>
+      <button type="submit" class="chip" data-i18n="save"></button>
+    </div>
+  </form>
+
+  <!-- 다음 회복 -->
+  <div class="rowcard recover">
+    <div class="rhead"><span class="rico">⏱</span><b data-i18n="nextRecover"></b><span class="rule"></span></div>
+    <div class="rbody" id="recover"></div>
+  </div>
+
+  <!-- 구독 관리 (+ 비용 분석) -->
+  <details class="rowcard fold subsfold" id="subsFold">
+    <summary>
+      <span class="crown">♛</span>
+      <span class="stext"><b data-i18n="subsTitle"></b><small id="subsSub"></small></span>
+      <span class="chev">›</span>
+    </summary>
+    <div class="subs-inner">
+      <div class="subtotal" id="subsTotal"></div>
+      <ul class="subs" id="subsList"></ul>
+      <div id="subsEditor" class="hidden">
+        <div class="subs-edit" id="subsEditList"></div>
+        <div class="row end">
+          <button class="chip ghost" id="btnAddSub" data-i18n="addSub"></button>
+          <button class="chip" id="btnSaveSubs" data-i18n="done"></button>
+        </div>
+      </div>
+      <div class="row end" id="subsActions">
+        <button class="chip ghost" id="btnEditSubs" data-i18n="editAdd"></button>
+      </div>
+      <div class="costwrap" id="costFold">
+        <div class="costhead"><b data-i18n="costTitle"></b><span class="src" id="costSummary"></span></div>
+        <div id="costBody"></div>
+      </div>
+    </div>
+    <datalist id="aiServices"></datalist>
+  </details>
+
+  <!-- BGM + 새 작업 -->
+  <div class="rowcard bgmbar">
+    <div class="thumb" id="bgmThumb"><i class="moon"></i><i class="stars"></i><i class="sky"></i></div>
+    <div class="bgmmid">
+      <div class="bgmtitle">BGM · <select id="bgmMood"></select></div>
+      <div class="bgmctl">
+        <button class="playbtn" id="btnBgm" data-i18n-title="bgmPlay">▶</button>
+        <span class="wave" id="wave"></span>
+        <button class="icon srch" id="btnBgmSearch" data-i18n-title="search">⌕</button>
+      </div>
+    </div>
+    <button class="cta" id="btnNewTask"><span class="plus">＋</span><span data-i18n="newTask"></span></button>
+    <div class="ctamenu hidden" id="ctaMenu">
+      <button data-open="https://claude.ai/new">Claude</button>
+      <button data-open="https://chatgpt.com/codex">Codex</button>
+    </div>
+  </div>
+  <div class="row bgmsearch hidden" id="bgmSearchRow">
+    <input type="text" id="bgmCustom" data-i18n-ph="ph_bgm">
+    <button class="chip ghost" id="btnBgmCustom" data-i18n="search"></button>
+  </div>
+  <div class="foot" id="themeFoot"></div>
+  <div class="brandrow">
+    <span class="made-by">made by</span>
+    <button class="brand-btn" data-link="https://moonsunezipbrand.vercel.app">🏠 문수네집</button>
+    <button class="brand-btn" data-link="https://www.instagram.com/moonsune.zip/">📸 Instagram</button>
+    <button class="brand-btn" data-link="https://moonsune-zip.vercel.app/">✨ moonsune.zip</button>
+  </div>
+  <div class="grip gl" data-grip="left" data-i18n-title="resize"></div><div class="grip gr" data-grip="right" data-i18n-title="resize"></div>
+</div>
+<script src="i18n.js"></script>
+<script src="characters.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

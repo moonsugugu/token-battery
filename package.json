@@ -1,0 +1,17 @@
+{
+  "name": "ai-usage-widget",
+  "version": "1.0.0",
+  "description": "AI 크루 (AI CREW) — Claude/Codex 5시간·주간 한도를 항상 위에 보여주는 캐릭터 위젯 · 구독 결제일 · 코딩 BGM · made by 문수네집",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^44.4.5"
+  },
+  "allowScripts": {
+    "electron@44.4.5": true
+  },
+  "author": "문수네집 (moonsune.zip)"
+}
