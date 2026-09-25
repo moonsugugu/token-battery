@@ -5,7 +5,7 @@
 Claude와 Codex 토큰 사용 한도를 **배터리처럼 한눈에** 보여주는 Windows 데스크톱 위젯이에요. 5시간 창의 리셋은 시각 또는 남은 시간으로 고를 수 있고, 주간 한도는 항상 `2일`처럼 남은 기간으로 표시해요.
 테마마다 전용으로 그린 배경과 서로 다른 캐릭터 듀오가 잔량에 따라 표정과 움직임을 바꿔요.
 
-made by [🏠 문수네집](https://moonsunezipbrand.vercel.app) · [📸 Instagram](https://www.instagram.com/moonsune.zip/) · [✨ moonsune.zip](https://moonsunezip.com)
+made by [🏠 문수네집](https://moonsunezip.com) · [📸 Instagram](https://www.instagram.com/moonsune.zip/) · [✨ moonsune.zip](https://moonsunezip.com)
 
 ## 기능
 
@@ -58,6 +58,13 @@ Claude 사용량 API는 공식 공개 API가 아니라서 바뀔 수 있어요. 
 | Español | Claude y Codex, ahora como una batería | Mira cuánto te queda y cuándo se reinicia. |
 
 프로젝트: [github.com/moonsugugu/token-battery](https://github.com/moonsugugu/token-battery)
+
+## 릴스 만들기
+
+1. `python tools/reel/capture.py <영문 경로 앱 폴더> output/frames`로 시연용 값으로 장면을 캡처해요. 실제 설정은 건드리지 않아요.
+2. 문수네집 릴스 스킬 엔진으로 `tools/reel/token-battery.reel.json`을 렌더링해요.
+   - 위치: `~/.claude/skills/문수네집-릴스-만들기/scripts/reel_engine.py`
+3. 결과물은 `output/token-battery-reel.mp4`와 커버 jpg예요. `output/`은 저장소에 올라가지 않아요.
 
 ## 참고
 

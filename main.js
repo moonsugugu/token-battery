@@ -841,7 +841,9 @@ function createTray() {
 }
 
 // ---------- IPC ----------
+let fakeUsage = null; // 개발용 캡처(WIDGET_SNAPSHOT_STEPS)에서만 사용
 ipcMain.handle('usage:get', async () => {
+  if (fakeUsage) return { ...fakeUsage, now: Date.now() };
   const [claude, codex] = await Promise.all([
     getClaudeUsage(),
     getCodexUsage().catch(async (error) => {
@@ -884,7 +886,8 @@ ipcMain.handle('notifications:status-message', (_e, data) => { notifyRenderer(da
 ipcMain.handle('claude:login', () => openClaudeLogin());
 ipcMain.handle('open:url', (_e, url) => {
   const ok = /^https:\/\/(www\.)?(youtube\.com|claude\.ai|chatgpt\.com)\//.test(url)
-    || ['https://moonsunezipbrand.vercel.app', 'https://www.instagram.com/moonsune.zip/', 'https://moonsune-zip.vercel.app/'].includes(url);
+    || /^https:\/\/(www\.)?moonsunezip\.com(\/|$)/.test(url)
+    || url === 'https://www.instagram.com/moonsune.zip/';
   if (ok) shell.openExternal(url);
 });
 ipcMain.handle('tray:labels', (_e, labels) => { trayLabels = { ...trayLabels, ...labels }; buildTrayMenu(); });
@@ -965,6 +968,7 @@ app.setAppUserModelId('com.moonsunezip.tokenbattery');
 // 개발 확인용 스냅샷 모드는 실제 설정을 건드리지 않도록 별도 폴더 사용
 if (process.env.WIDGET_SNAPSHOT) app.setPath('userData', path.join(os.tmpdir(), 'token-battery-snapshot'));
 else app.setPath('userData', path.join(app.getPath('appData'), 'ai-usage-widget')); // 이름 변경 후에도 기존 설정·로그인을 유지
+if (process.env.WIDGET_SNAPSHOT_SCALE) app.commandLine.appendSwitch('force-device-scale-factor', process.env.WIDGET_SNAPSHOT_SCALE);
 // 일부 PC(보안 프로그램·샌드박스 환경)에서 GPU 샌드박스가 뜨지 않아 앱이 바로 꺼지는 문제 방지
 app.commandLine.appendSwitch('disable-gpu-sandbox');
 // 한국 금융·키보드 보안 프로그램(AhnLab Safe Transaction, nProtect 등)이 설치된 PC에서는
@@ -1013,6 +1017,32 @@ if (!app.requestSingleInstanceLock()) {
         setTimeout(() => win.webContents.executeJavaScript(process.env.WIDGET_SNAPSHOT_JS).catch((e) => console.log('[js]', e.message)), 5000);
       }
       setTimeout(async () => {
+        // WIDGET_SNAPSHOT_STEPS=steps.json → 장면별로 테마·모드·사용량을 바꿔가며 카드만 잘라 저장 (릴스 제작용)
+        if (process.env.WIDGET_SNAPSHOT_STEPS) {
+          const spec = JSON.parse(await fs.readFile(process.env.WIDGET_SNAPSHOT_STEPS, 'utf8'));
+          const meta = {};
+          const w5 = (p, r) => ({ percent: p, resetsAt: Date.now() + r });
+          await win.webContents.executeJavaScript(`(() => { const st = document.createElement('style'); st.textContent = '.ctrl,.grip{display:none!important}'; document.head.appendChild(st); })()`);
+          for (const step of spec.steps) {
+            const u = step.usage || spec.usage;
+            fakeUsage = {
+              claude: { ok: true, source: 'web', updatedAt: Date.now(), fiveHour: w5(u.c5, u.cr5), weekly: w5(u.cw, u.crw) },
+              codex: { ok: true, source: 'codex-log', updatedAt: Date.now(), fiveHour: w5(u.x5, u.xr5), weekly: w5(u.xw, u.xrw) },
+            };
+            await win.webContents.executeJavaScript(`applyTheme('${step.theme}'); setMode('${step.mode}'); refresh().then(() => { ${step.js || ''} })`);
+            await new Promise((r) => setTimeout(r, step.wait || 900));
+            const sel = step.sel || `#${{ mini: 'miniCard', char: 'charCard', full: 'card' }[step.mode]}`;
+            const info = await win.webContents.executeJavaScript(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); const r = el.getBoundingClientRect();
+              return { x: r.x, y: r.y, w: r.width, h: r.height, radius: parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, dpr: window.devicePixelRatio }; })()`);
+            const shot = await win.webContents.capturePage();
+            const d = info.dpr;
+            const crop = shot.crop({ x: Math.round(info.x * d), y: Math.round(info.y * d), width: Math.round(info.w * d), height: Math.round(info.h * d) });
+            await fs.writeFile(path.join(spec.outDir, step.out), crop.toPNG());
+            meta[step.out] = { radius: info.radius * d, w: Math.round(info.w * d), h: Math.round(info.h * d) };
+            console.log('[step]', step.out, JSON.stringify(meta[step.out]));
+          }
+          await fs.writeFile(path.join(spec.outDir, 'meta.json'), JSON.stringify(meta, null, 2));
+        }
         // WIDGET_SNAPSHOT_ALL=폴더 → 모든 테마 × (미니/자세히)를 차례로 캡처
         if (process.env.WIDGET_SNAPSHOT_ALL) {
           const ids = await win.webContents.executeJavaScript('THEMES.map((t) => t.id)');
