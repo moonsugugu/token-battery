@@ -32,6 +32,7 @@ const DEFAULT_STORE = {
   bgmLast: 'lofi',
   lang: 'ko',
   theme: 'cyber',
+  timeBasis: 'clock',
   showClaude: true,
   showCodex: true,
   alertsOn: true,

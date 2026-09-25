@@ -37,6 +37,10 @@ function fmtClock(ts) {
   if (!ts) return '';
   return new Date(ts).toLocaleString(LANG, { month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' });
 }
+function fmtClockTime(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+}
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clampPct = (w) => Math.max(0, Math.min(100, Math.round(w.percent)));
 const SVC = { claude: 'Claude', codex: 'Codex' };
@@ -45,6 +49,12 @@ const svcData = (s) => (usage && usage[s] && usage[s].ok ? usage[s] : null);
 
 // ---------- 표시 기준: 남은 한도(기본) 또는 사용량 ----------
 const useRemain = () => store.basis !== 'used';
+const useResetClock = () => store.timeBasis !== 'remaining';
+function resetDisplay(ts, { date = false, expired = '–' } = {}) {
+  if (!ts) return '–';
+  if (ts <= Date.now()) return expired;
+  return useResetClock() ? (date ? fmtClock(ts) : fmtClockTime(ts)) : fmtShort(ts - Date.now());
+}
 const expiredW = (w) => w && w.resetsAt && w.resetsAt < Date.now();
 const remainOf = (w) => (w ? (expiredW(w) ? 100 : 100 - clampPct(w)) : null);
 const shown = (w) => (w ? (useRemain() ? remainOf(w) : expiredW(w) ? 0 : clampPct(w)) : null);
@@ -87,7 +97,7 @@ function crewCard(s) {
   const accent = `var(--${s})`;
   const c5 = (v5 != null && dangerColor(v5)) || accent;
   const cw = (vw != null && dangerColor(vw)) || accent;
-  const left5 = d && d.fiveHour && d.fiveHour.resetsAt && d.fiveHour.resetsAt > Date.now() ? d.fiveHour.resetsAt - Date.now() : null;
+  const reset5 = d && d.fiveHour ? resetDisplay(d.fiveHour.resetsAt) : '–';
   const [bIcon, bCls] = BADGE[st];
   return `
     <div class="crewcard ${s} st-${st}" ${!d && s === 'claude' ? 'data-act="login"' : ''}>
@@ -101,7 +111,7 @@ function crewCard(s) {
         <div class="ringwrap">${ringSVG(v5, c5)}<div class="rval"><b style="${v5 != null && dangerColor(v5) ? `color:${dangerColor(v5)}` : ''}">${v5 ?? '–'}<small>%</small></b></div></div>
         <div class="cside">
           <span class="clbl">${useRemain() ? t('remainLbl') : t('usedLbl')}<em> · ${t('h5s')}</em></span>
-          <span class="pill">${t('resetIn')} <b>${left5 != null ? fmtShort(left5) : '–'}</b></span>
+          <span class="pill">${useResetClock() ? t('resetAt') : t('resetIn')} <b>${reset5}</b></span>
         </div>
       </div>
       <div class="segs" title="${esc(t('wk'))} ${vw ?? '–'}%"><span>${t('weekShort')}</span><div class="segbar">${segsHTML(vw, cw)}</div><b>${vw ?? '–'}%</b></div>
@@ -122,8 +132,8 @@ function renderUsage() {
   // 다음 회복: 5시간 리셋 (주간은 작게)
   $('recover').innerHTML = ['claude', 'codex'].filter(svcOn).map((x) => {
     const d = svcData(x);
-    const l5 = d && d.fiveHour && d.fiveHour.resetsAt > Date.now() ? fmtShort(d.fiveHour.resetsAt - Date.now()) : '–';
-    const lw = d && d.weekly && d.weekly.resetsAt > Date.now() ? fmtShort(d.weekly.resetsAt - Date.now()) : '–';
+    const l5 = d && d.fiveHour ? resetDisplay(d.fiveHour.resetsAt) : '–';
+    const lw = d && d.weekly ? resetDisplay(d.weekly.resetsAt, { date: true }) : '–';
     return `<span class="rc"><i class="rdot ${x}"></i>${SVC[x]} <b>${l5}</b><small>${t('weekShort')} ${lw}</small></span>`;
   }).join('<span class="rsep"></span>');
 
@@ -138,7 +148,8 @@ function renderUsage() {
 function miniCell(w) {
   if (!w) return '<b style="color:var(--muted)">–</b><em></em>';
   const v = shown(w);
-  return `<b style="color:${dangerColor(v) || 'var(--text)'}">${v}%</b><em>${fmtShort(w.resetsAt ? w.resetsAt - Date.now() : null)}</em>`;
+  const reset = resetDisplay(w.resetsAt);
+  return `<b style="color:${dangerColor(v) || 'var(--text)'}">${v}%</b><em>${reset === t('resetDone') ? '–' : reset}</em>`;
 }
 function renderMini() {
   if (!usage || !store) return;
@@ -177,9 +188,10 @@ function renderChar() {
     const rem = (w) => (w ? (w.resetsAt && w.resetsAt < Date.now() ? 100 : 100 - clampPct(w)) : null);
     const r5 = d ? rem(d.fiveHour) : null, rw = d ? rem(d.weekly) : null;
     const meter = (label, r, cls) => `<div class="meter ${cls}"><span>${label}</span><div class="mbar"><i style="width:${r ?? 0}%;background:${r != null && r <= 15 ? 'var(--bad)' : `var(--${s})`}"></i></div><b>${r == null ? '–' : r + '%'}</b></div>`;
-    const reset = d && d.fiveHour && d.fiveHour.resetsAt && d.fiveHour.resetsAt > Date.now() ? `↻ ${world[2]} ${fmtShort(d.fiveHour.resetsAt - Date.now())}` : '';
+    const reset = d && d.fiveHour && d.fiveHour.resetsAt && d.fiveHour.resetsAt > Date.now()
+      ? `↻ ${useResetClock() ? t('resetAt') : world[2]} ${resetDisplay(d.fiveHour.resetsAt)}` : '';
     const wReset = d && d.weekly && d.weekly.resetsAt
-      ? (d.weekly.resetsAt > Date.now() ? `${t('weekShort')} ↻ ${fmtMD(d.weekly.resetsAt)} · ${fmtShort(d.weekly.resetsAt - Date.now())}` : `${t('weekShort')} ↻ ${t('resetDone')}`)
+      ? (d.weekly.resetsAt > Date.now() ? `${t('weekShort')} ↻ ${resetDisplay(d.weekly.resetsAt, { date: true })}` : `${t('weekShort')} ↻ ${t('resetDone')}`)
       : `${t('weekShort')} ↻ –`;
     html.push(`
       <div class="actor st-${st}" ${!d && s === 'claude' ? 'data-act="expand-login"' : ''}>
@@ -529,6 +541,8 @@ function applyOptions() {
   $('optCost').checked = store.costOn !== false;
   $('basisRemain').checked = useRemain();
   $('basisUsed').checked = !useRemain();
+  $('timeBasisClock').checked = useResetClock();
+  $('timeBasisRemaining').checked = !useResetClock();
   $('alertLevelsRow').classList.toggle('hidden', store.alertsOn === false);
   const lv = store.alertLevels || [70, 85, 95];
   for (const c of document.querySelectorAll('.lvl')) c.checked = lv.includes(Number(c.value));
@@ -546,6 +560,9 @@ bindOpt('optAlerts', 'alertsOn');
 bindOpt('optCost', 'costOn');
 for (const r of document.querySelectorAll('input[name=basis]')) {
   r.onchange = async () => { store = await W.setStore({ basis: r.value }); applyOptions(); };
+}
+for (const r of document.querySelectorAll('input[name=timeBasis]')) {
+  r.onchange = async () => { store = await W.setStore({ timeBasis: r.value }); applyOptions(); };
 }
 for (const c of document.querySelectorAll('.lvl')) {
   c.onchange = async () => {
