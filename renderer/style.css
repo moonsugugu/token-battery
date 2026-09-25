@@ -767,3 +767,341 @@ canvas.pixchar.mono { filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(4
 .brand-btn:hover { background: color-mix(in srgb, var(--claude) 15%, transparent); }
 .theme-industrial .made-by, .theme-industrial .brand-btn { color: #111; border-color: #111; }
 .theme-crt .brand-btn, .theme-crt .made-by { font-size: 12px; }
+
+/* =========================================================
+   AI CREW 제품형 리디자인 — 정보 위계와 캐릭터 카드 정리
+   ---------------------------------------------------------
+   테마별 색·질감은 위에서 유지하고, 전체 모드의 공통 레이아웃만
+   하나의 제품처럼 정돈한다. 숫자 → 리셋 → 보조 기능 순서로 읽힌다.
+   ========================================================= */
+.card.full {
+  padding-bottom: 8px;
+  border-radius: calc(var(--radius) + 4px);
+}
+
+.card.full .titlebar {
+  gap: 9px;
+  padding: 14px 14px 12px;
+  margin-bottom: 12px;
+  border-bottom-color: color-mix(in srgb, var(--line) 82%, transparent);
+}
+
+.card.full .titlebar .logo {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--claude) 16%, transparent);
+}
+
+.card.full .titlebar .title {
+  font-size: 20px;
+  letter-spacing: 1.2px;
+}
+
+.card.full .titlebar .tsub {
+  margin-top: 3px;
+  font-size: 8px;
+  letter-spacing: 1.7px;
+}
+
+.card.full .titlebar .sync {
+  font-size: 10.5px;
+}
+
+.card.full .hbtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+}
+
+.card.full .sechead {
+  gap: 9px;
+  margin: 0 14px 10px;
+}
+
+.card.full .sechead h2 {
+  font-size: 18px;
+  letter-spacing: -.2px;
+}
+
+.card.full .daymsg {
+  font-size: 10.5px;
+}
+
+.card.full .crew {
+  gap: 10px;
+  margin: 0 10px 10px;
+}
+
+.card.full .crewcard {
+  border-radius: calc(var(--pradius) + 6px);
+  border-width: 1px;
+  box-shadow: var(--glow), 0 5px 14px rgba(0, 0, 0, .12);
+}
+
+.card.full .crewcard .portrait {
+  height: 132px;
+  align-items: flex-end;
+  border-bottom-color: color-mix(in srgb, var(--line) 85%, transparent);
+}
+
+.card.full .crewcard .portrait .avatar {
+  width: 112px;
+  height: 112px;
+  margin-bottom: 0;
+}
+
+.card.full .crewcard .portrait .avatar svg,
+.card.full .crewcard .portrait .avatar canvas {
+  width: 112px;
+  height: 112px;
+}
+
+/* 큰 말풍선 대신 캐릭터의 체크/경고 배지를 상태 표시로 사용 */
+.card.full .crewcard .speech {
+  display: none;
+}
+
+.card.full .crewcard .stbadge {
+  right: 10px;
+  bottom: 10px;
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+}
+
+.card.full .cname {
+  padding: 9px 8px 3px;
+}
+
+.card.full .cname b {
+  font-size: 18px;
+}
+
+.card.full .cname small {
+  display: none;
+}
+
+.card.full .cstats {
+  gap: 8px;
+  padding: 5px 10px 3px;
+}
+
+.card.full .ringwrap,
+.card.full .ringwrap .bigring {
+  width: 78px;
+  height: 78px;
+}
+
+.card.full .rval b {
+  font-size: 23px;
+}
+
+.card.full .rval small {
+  font-size: 10px;
+}
+
+.card.full .cside {
+  gap: 6px;
+}
+
+.card.full .clbl {
+  font-size: 10.5px;
+}
+
+.card.full .clbl em {
+  display: none;
+}
+
+.card.full .pill {
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--panel-bd) 85%, transparent);
+  background: color-mix(in srgb, var(--input-bg) 75%, transparent);
+}
+
+.card.full .segs {
+  gap: 7px;
+  padding: 8px 12px 12px;
+}
+
+.card.full .segbar {
+  gap: 4px;
+}
+
+.card.full .segbar i {
+  height: 7px;
+  border-radius: 4px;
+}
+
+.card.full .rowcard {
+  margin: 0 10px 10px;
+  padding: 11px 14px;
+  border-radius: calc(var(--pradius) + 5px);
+}
+
+.card.full .rhead {
+  font-size: 14px;
+}
+
+.card.full .rbody {
+  margin-top: 8px;
+}
+
+.card.full .rc {
+  gap: 7px;
+  font-size: 12px;
+}
+
+.card.full .rc b {
+  font-size: 16px;
+}
+
+.card.full .subsfold > summary {
+  gap: 11px;
+}
+
+.card.full .crown {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.card.full .stext b {
+  font-size: 14px;
+}
+
+.card.full .stext small {
+  font-size: 10px;
+}
+
+.card.full .bgmbar {
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  gap: 11px;
+  padding: 10px 12px;
+}
+
+.card.full .thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 12px;
+}
+
+.card.full .bgmtitle {
+  font-size: 12px;
+}
+
+.card.full .playbtn {
+  width: 32px;
+  height: 32px;
+}
+
+.card.full .cta {
+  min-height: 42px;
+  padding: 10px 15px;
+  font-size: 13px;
+}
+
+/* 테마별 제품 톤 보정: 공통 구조는 같고 표면 언어만 달라진다. */
+.theme-cyber .card.full {
+  background: linear-gradient(180deg, #071923, #08111c);
+}
+.theme-cyber .crewcard,
+.theme-cyber .rowcard {
+  background: rgba(7, 28, 43, .78);
+}
+
+.theme-engine .card.full {
+  background: linear-gradient(180deg, #292d33, #171a1f);
+}
+.theme-engine .crewcard,
+.theme-engine .rowcard {
+  background: linear-gradient(180deg, #30343a, #20242a);
+}
+
+.theme-mascot {
+  --claude: #f28b68;
+  --codex: #7187f5;
+  --panel: rgba(255, 253, 248, .93);
+  --panel-bd: #eadcc9;
+  --line: #eadfce;
+  --track: #e9e3db;
+}
+.theme-mascot .card.full {
+  background: linear-gradient(180deg, #fffaf2, #f4eadb);
+}
+.theme-mascot .crewcard,
+.theme-mascot .rowcard {
+  box-shadow: 0 5px 15px rgba(121, 83, 48, .12);
+}
+.theme-mascot .crewcard.codex .portrait {
+  background: linear-gradient(180deg, #edf2ff, #dfe7ff);
+}
+
+.theme-arcade .card.full .titlebar .title,
+.theme-arcade .card.full .sechead h2 {
+  font-size: 16px;
+}
+.theme-arcade .card.full .crewcard,
+.theme-arcade .card.full .rowcard {
+  box-shadow: 0 0 0 1px rgba(124, 77, 255, .45), 0 0 18px rgba(124, 77, 255, .2);
+}
+
+.theme-glass .card.full {
+  background: linear-gradient(160deg, rgba(242, 248, 255, .94), rgba(213, 230, 249, .94));
+  backdrop-filter: blur(18px);
+}
+.theme-glass .crewcard,
+.theme-glass .rowcard {
+  background: rgba(255, 255, 255, .58);
+  backdrop-filter: blur(14px);
+}
+
+.theme-crt .card.full .crewcard,
+.theme-crt .card.full .rowcard {
+  box-shadow: 0 0 10px rgba(86, 255, 140, .14), inset 0 0 12px rgba(86, 255, 140, .05);
+}
+
+.theme-industrial .card.full .crewcard,
+.theme-industrial .card.full .rowcard {
+  border-color: #111;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 5px 12px rgba(0, 0, 0, .35);
+}
+
+.theme-garden .card.full {
+  background: linear-gradient(180deg, #3e5940, #293e2d);
+}
+.theme-garden .crewcard,
+.theme-garden .rowcard {
+  background: rgba(25, 43, 27, .78);
+}
+
+.theme-anime .card.full .crewcard,
+.theme-anime .card.full .rowcard {
+  box-shadow: 0 6px 16px rgba(24, 21, 80, .35), inset 0 0 0 1px rgba(160, 180, 255, .12);
+}
+
+.theme-editorial .card.full {
+  background: #f4efe6;
+}
+.theme-editorial .card.full .crewcard,
+.theme-editorial .card.full .rowcard {
+  box-shadow: none;
+  background: #fbf8f1;
+}
+.theme-editorial .card.full .crewcard .portrait {
+  border-bottom: 1px solid #d6cdbb;
+}
+
+@media (max-height: 680px) {
+  .card.full .crewcard .portrait { height: 120px; }
+  .card.full .crewcard .portrait .avatar,
+  .card.full .crewcard .portrait .avatar svg,
+  .card.full .crewcard .portrait .avatar canvas { width: 100px; height: 100px; }
+  .card.full .ringwrap,
+  .card.full .ringwrap .bigring { width: 70px; height: 70px; }
+  .card.full .rval b { font-size: 21px; }
+}
