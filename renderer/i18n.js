@@ -9,6 +9,7 @@ const LANGS = [
 
 const I18N = {
   ko: {
+    appName: '토큰배터리',
     refresh: '새로고침', settings: '설정', mini: '미니 모드', expand: '자세히 보기', hide: '트레이로 숨기기',
     lang: '언어', theme: '디자인', show: '표시', opacity: '투명도', autostart: '윈도우 시작 시 자동 실행',
     features: '기능', alerts: '사용량 알림', cost: '비용 분석', taskWarn: '긴 작업 경고',
@@ -38,9 +39,10 @@ const I18N = {
     v_ok: '✅ 가능해요 · 5시간 {r}% 남음', v_tight: '⚠ 빠듯해요 · 5시간 {r}% 남음', v_no: '⛔ 부족해요 · {t} 뒤 5시간 리셋 후 권장', v_week: '⛔ 주간 한도가 {r}%밖에 없어요',
     warnMini: '⚠ {s} {w} {r}% 남음 · 긴 작업 주의',
     n_title: '{s} {w} 한도 {p}% 사용', n_body: '리셋까지 {t} 남았어요.',
-    tray_tip: 'AI 크루 · Claude/Codex 한도', tray_toggle: '보이기/숨기기', tray_reset: '위치 초기화', tray_quit: '종료',
+    tray_tip: '토큰배터리 · Claude/Codex 한도', tray_toggle: '보이기/숨기기', tray_reset: '위치 초기화', tray_quit: '종료',
   },
   en: {
+    appName: 'TokenBattery',
     refresh: 'Refresh', settings: 'Settings', mini: 'Mini mode', expand: 'Expand', hide: 'Hide to tray',
     lang: 'Language', theme: 'Design', show: 'Show', opacity: 'Opacity', autostart: 'Start with Windows',
     features: 'Features', alerts: 'Usage alerts', cost: 'Cost analysis', taskWarn: 'Long-task warning',
@@ -70,9 +72,10 @@ const I18N = {
     v_ok: '✅ Go ahead · {r}% of 5h left', v_tight: '⚠ Tight · {r}% of 5h left', v_no: '⛔ Not enough · wait for the 5h reset in {t}', v_week: '⛔ Only {r}% of weekly limit left',
     warnMini: '⚠ {s} {w} {r}% left · avoid long tasks',
     n_title: '{s} {w} limit at {p}%', n_body: '{t} until reset.',
-    tray_tip: 'AI Crew · Claude/Codex limits', tray_toggle: 'Show / Hide', tray_reset: 'Reset position', tray_quit: 'Quit',
+    tray_tip: 'TokenBattery · Claude/Codex limits', tray_toggle: 'Show / Hide', tray_reset: 'Reset position', tray_quit: 'Quit',
   },
   ja: {
+    appName: 'トークンバッテリー',
     refresh: '更新', settings: '設定', mini: 'ミニモード', expand: '詳細表示', hide: 'トレイに隠す',
     lang: '言語', theme: 'デザイン', show: '表示', opacity: '透明度', autostart: 'Windows 起動時に実行',
     features: '機能', alerts: '使用量アラート', cost: 'コスト分析', taskWarn: '長時間タスク警告',
@@ -102,9 +105,10 @@ const I18N = {
     v_ok: '✅ 可能 · 5時間枠 残り{r}%', v_tight: '⚠ ぎりぎり · 5時間枠 残り{r}%', v_no: '⛔ 不足 · {t}後の5時間リセット後を推奨', v_week: '⛔ 週間上限が残り{r}%のみ',
     warnMini: '⚠ {s} {w} 残り{r}% · 長時間タスク注意',
     n_title: '{s} {w} 上限の{p}%を使用', n_body: 'リセットまで{t}。',
-    tray_tip: 'AIクルー · Claude/Codex 上限', tray_toggle: '表示/非表示', tray_reset: '位置をリセット', tray_quit: '終了',
+    tray_tip: 'TokenBattery · Claude/Codex 上限', tray_toggle: '表示/非表示', tray_reset: '位置をリセット', tray_quit: '終了',
   },
   zh: {
+    appName: 'TokenBattery',
     refresh: '刷新', settings: '设置', mini: '迷你模式', expand: '详细视图', hide: '隐藏到托盘',
     lang: '语言', theme: '设计', show: '显示', opacity: '透明度', autostart: '开机自动启动',
     features: '功能', alerts: '用量提醒', cost: '费用分析', taskWarn: '长任务警告',
@@ -134,9 +138,10 @@ const I18N = {
     v_ok: '✅ 可以 · 5小时额度剩余{r}%', v_tight: '⚠ 偏紧 · 5小时额度剩余{r}%', v_no: '⛔ 不足 · 建议{t}后5小时重置再开始', v_week: '⛔ 每周额度仅剩{r}%',
     warnMini: '⚠ {s} {w} 剩余{r}% · 注意长任务',
     n_title: '{s} {w} 已用 {p}%', n_body: '距离重置还有{t}。',
-    tray_tip: 'AI 小队 · Claude/Codex 额度', tray_toggle: '显示/隐藏', tray_reset: '重置位置', tray_quit: '退出',
+    tray_tip: 'TokenBattery · Claude/Codex 额度', tray_toggle: '显示/隐藏', tray_reset: '重置位置', tray_quit: '退出',
   },
   es: {
+    appName: 'TokenBattery',
     refresh: 'Actualizar', settings: 'Ajustes', mini: 'Modo mini', expand: 'Ampliar', hide: 'Ocultar en bandeja',
     lang: 'Idioma', theme: 'Diseño', show: 'Mostrar', opacity: 'Opacidad', autostart: 'Iniciar con Windows',
     features: 'Funciones', alerts: 'Alertas de uso', cost: 'Análisis de costos', taskWarn: 'Aviso de tareas largas',
@@ -166,7 +171,7 @@ const I18N = {
     v_ok: '✅ Adelante · queda {r}% de 5 h', v_tight: '⚠ Justo · queda {r}% de 5 h', v_no: '⛔ Insuficiente · espera al reinicio de 5 h en {t}', v_week: '⛔ Solo queda {r}% del límite semanal',
     warnMini: '⚠ {s} {w} queda {r}% · evita tareas largas',
     n_title: '{s} {w}: {p}% del límite', n_body: 'Faltan {t} para el reinicio.',
-    tray_tip: 'AI Crew · límites Claude/Codex', tray_toggle: 'Mostrar / Ocultar', tray_reset: 'Restablecer posición', tray_quit: 'Salir',
+    tray_tip: 'TokenBattery · límites Claude/Codex', tray_toggle: 'Mostrar / Ocultar', tray_reset: 'Restablecer posición', tray_quit: 'Salir',
   },
 };
 
@@ -199,7 +204,7 @@ const I18N_EXTRA = {
     resize: '끌어서 크기 조절 · 더블클릭하면 원래 크기', charMode: '캐릭터 모드', hotkeys: '단축키', hkToggle: '미니 켜기/끄기', hkFull: '위젯 보이기/숨기기', hkPress: '키를 누르세요…',
     hkNone: '없음', hkBusy: '다른 프로그램이 사용 중인 키예요', hkHint: 'Esc 취소 · Backspace 끄기',
     miniTip: '{s}: 5시간 {p5}% (리셋 {r5}) · 주간 {pw}% (리셋 {rw})',
-    b_fresh: '쌩쌩해요!', b_ok: '열심히 일하는 중', b_tired: '조금 지쳤어요…', b_dizzy: '한계예요! 😵', b_sleep: '쿨쿨… 리셋 기다리는 중', b_none: '연결해 주세요',
+    b_fresh: '충전 넉넉해요!', b_ok: '에너지 가득, 열심히 일해요', b_tired: '배터리가 조금 줄었어요…', b_dizzy: '배터리 잔량이 얼마 안 남았어요! 😵', b_sleep: '충전 대기 중… 리셋을 기다려요', b_none: '연결하고 잔량을 확인해 주세요',
     codexLoginSeen: 'Codex 로그인 정보가 확인됐어요. 사용량은 로컬 Codex 세션 로그에서 읽어요.',
     codexLoginMissing: 'Codex 로그인 파일을 찾지 못했어요. Codex CLI에서 먼저 로그인해 주세요.', codexLoginMissingS: '로그인 필요',
     codexUsagePending: 'Codex 사용량 로그를 못 찾았어요. Codex에서 한 번 더 작업한 뒤 새로고침해 주세요.', codexUsagePendingS: '한도 대기',
@@ -214,15 +219,15 @@ const I18N_EXTRA = {
     notifyHooksHelp: '설치 시 Claude·Codex 사용자 설정을 백업한 뒤 훅을 추가합니다. 프롬프트나 대화 내용은 보내지 않고 작업 시작/완료 신호만 로컬(127.0.0.1)로 전달해요. 최소 시간 이상 작업한 턴이 끝날 때 한 번 전송합니다. Codex는 재시작 후 /hooks에서 새 훅을 검토하고 신뢰 처리해야 실행돼요.',
     notifyStateReady: '연결됨', notifyStateNeedTelegram: 'Bot Token과 Chat ID를 설정해 주세요.', notifyStateNeedKakao: '카카오 REST 키로 로그인 연결해 주세요.',
     notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: '훅 설치 완료. Claude Code/Codex를 다시 시작해 주세요.',
-    notifyRemoved: 'AI Crew가 추가한 완료 감지 훅을 해제했어요.', notifyConfirmInstall: 'Claude settings.json과 Codex config.toml을 수정합니다. 기존 파일은 백업합니다. 진행할까요?',
-    notifyConfirmRemove: 'AI Crew가 추가한 훅만 설정 파일에서 제거할까요?', notifyCopied: '설정을 저장했어요.', notifyKakaoPending: '브라우저에서 카카오 로그인을 완료해 주세요.',
+    notifyRemoved: 'TokenBattery가 추가한 완료 감지 훅을 해제했어요.', notifyConfirmInstall: 'Claude settings.json과 Codex config.toml을 수정합니다. 기존 파일은 백업합니다. 진행할까요?',
+    notifyConfirmRemove: 'TokenBattery가 추가한 훅만 설정 파일에서 제거할까요?', notifyCopied: '설정을 저장했어요.', notifyKakaoPending: '브라우저에서 카카오 로그인을 완료해 주세요.',
     notifyForegroundSkipped: '코딩 창이 앞에 있어 알림을 건너뛰었어요.',
   },
   en: {
     resize: 'Drag to resize · double-click to reset', charMode: 'Character mode', hotkeys: 'Hotkeys', hkToggle: 'Mini on/off', hkFull: 'Show / hide widget', hkPress: 'Press a key…',
     hkNone: 'None', hkBusy: 'Key is used by another app', hkHint: 'Esc cancel · Backspace clear',
     miniTip: '{s}: 5h {p5}% (reset {r5}) · weekly {pw}% (reset {rw})',
-    b_fresh: 'Full of energy!', b_ok: 'Hard at work', b_tired: 'Getting tired…', b_dizzy: 'At my limit! 😵', b_sleep: 'Zzz… waiting for reset', b_none: 'Connect me',
+    b_fresh: 'Fully charged!', b_ok: 'Plenty of power · hard at work', b_tired: 'Battery is running low…', b_dizzy: 'Almost out of charge! 😵', b_sleep: 'Charging after reset…', b_none: 'Connect to check your charge',
     codexLoginSeen: 'Codex login credentials found. Usage is read from local Codex session logs.',
     codexLoginMissing: 'Codex login file not found. Sign in to Codex CLI first.', codexLoginMissingS: 'Sign in',
     codexUsagePending: 'No Codex usage event found. Run a Codex task, then refresh.', codexUsagePendingS: 'Waiting',
@@ -237,39 +242,39 @@ const I18N_EXTRA = {
     notifyHooksHelp: 'The app backs up your Claude/Codex user config before adding hooks. Prompts and conversation text are never sent; only start/stop signals go to localhost (127.0.0.1). One message is sent when a turn meets the minimum duration. After restarting Codex, review and trust the new hooks with /hooks.',
     notifyStateReady: 'Connected', notifyStateNeedTelegram: 'Set a Bot Token and Chat ID.', notifyStateNeedKakao: 'Connect with a Kakao REST key.',
     notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: 'Hooks installed. Restart Claude Code/Codex.',
-    notifyRemoved: 'Removed only hooks added by AI Crew.', notifyConfirmInstall: 'This edits Claude settings.json and Codex config.toml. Existing files will be backed up. Continue?',
-    notifyConfirmRemove: 'Remove only the hooks added by AI Crew?', notifyCopied: 'Settings saved.', notifyKakaoPending: 'Finish Kakao login in your browser.',
+    notifyRemoved: 'Removed only hooks added by TokenBattery.', notifyConfirmInstall: 'This edits Claude settings.json and Codex config.toml. Existing files will be backed up. Continue?',
+    notifyConfirmRemove: 'Remove only the hooks added by TokenBattery?', notifyCopied: 'Settings saved.', notifyKakaoPending: 'Finish Kakao login in your browser.',
     notifyForegroundSkipped: 'Skipped because a coding window is in front.',
   },
   ja: {
     resize: 'ドラッグでサイズ変更 · ダブルクリックで元に戻す', charMode: 'キャラクターモード', hotkeys: 'ショートカット', hkToggle: 'ミニ表示 ON/OFF', hkFull: 'ウィジェット表示/非表示', hkPress: 'キーを押してください…',
     hkNone: 'なし', hkBusy: '他のアプリが使用中のキーです', hkHint: 'Esc 取消 · Backspace 解除',
     miniTip: '{s}: 5時間 {p5}% (リセット {r5}) · 週間 {pw}% (リセット {rw})',
-    b_fresh: '元気いっぱい!', b_ok: 'がんばり中', b_tired: 'ちょっと疲れた…', b_dizzy: '限界です! 😵', b_sleep: 'すやすや… リセット待ち', b_none: '接続してね',
+    b_fresh: '充電たっぷり!', b_ok: '電力十分、作業中', b_tired: 'バッテリーが減ってきた…', b_dizzy: '残量わずか! 😵', b_sleep: 'リセット後の充電待ち…', b_none: '接続して残量を確認してね',
     codexLoginSeen: 'Codex のログイン情報を確認しました。ローカルのセッションログから利用量を取得します。', codexLoginMissing: 'Codex のログインファイルがありません。Codex CLI にログインしてください。', codexLoginMissingS: 'ログイン必要', codexUsagePending: '利用量ログがありません。Codex を使ってから更新してください。', codexUsagePendingS: '利用量待ち', codexReadError: 'Codex の利用量ログを読めません。再起動するかアクセス権を確認してください。', codexReadErrorS: '読取エラー',
     notifyTitle: '作業完了メッセージ', notifyOn: '通知を有効化', notifyProvider: '送信先', notifyTelegram: 'Telegram', notifyKakao: 'Kakao（自分宛て）', notifyMin: '最低作業時間（分）', notifySkipForeground: 'ウィジェットやコーディング画面が前面なら通知しない', notifyBotToken: 'Bot Token', notifyChatId: 'Chat ID', notifyFindChat: 'Chat ID を検索', notifySave: 'トークン保存', notifyTest: 'テスト送信',
     notifyTelegramHelp: 'BotFather でボットを作成し、/start を送信してからトークン保存と Chat ID 検索を行います。', notifyKakaoKey: 'REST API キー', notifyKakaoSecret: 'Client Secret（任意）', notifyKakaoConnect: 'Kakao ログイン接続', notifyKakaoDisconnect: '解除', notifyKakaoHelp: 'Kakao Login と talk_message 同意を有効にし、下の URI と GitHub ドメインを登録してください。',
-    notifyHooksTitle: 'Claude Code · Codex 検知', notifyHooksInstall: '完了フックを設定', notifyHooksRemove: 'フック解除', notifyHooksHelp: '設定をバックアップしてフックを追加します。プロンプト本文は送信せず、ローカル信号のみを送ります。Codex は再起動後に /hooks で確認・信頼してください。', notifyStateReady: '接続済み', notifyStateNeedTelegram: 'Bot Token と Chat ID を設定してください。', notifyStateNeedKakao: 'REST キーで Kakao に接続してください。', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: '設定完了。Claude Code/Codex を再起動してください。', notifyRemoved: 'AI Crew のフックを解除しました。', notifyConfirmInstall: '設定ファイルを編集し、既存ファイルをバックアップします。続行しますか？', notifyConfirmRemove: 'AI Crew が追加したフックだけを削除しますか？', notifyCopied: '保存しました。', notifyKakaoPending: 'ブラウザーで Kakao ログインを完了してください。', notifyForegroundSkipped: 'コーディング画面が前面のため通知をスキップしました。',
+    notifyHooksTitle: 'Claude Code · Codex 検知', notifyHooksInstall: '完了フックを設定', notifyHooksRemove: 'フック解除', notifyHooksHelp: '設定をバックアップしてフックを追加します。プロンプト本文は送信せず、ローカル信号のみを送ります。Codex は再起動後に /hooks で確認・信頼してください。', notifyStateReady: '接続済み', notifyStateNeedTelegram: 'Bot Token と Chat ID を設定してください。', notifyStateNeedKakao: 'REST キーで Kakao に接続してください。', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: '設定完了。Claude Code/Codex を再起動してください。', notifyRemoved: 'TokenBattery のフックを解除しました。', notifyConfirmInstall: '設定ファイルを編集し、既存ファイルをバックアップします。続行しますか？', notifyConfirmRemove: 'TokenBattery が追加したフックだけを削除しますか？', notifyCopied: '保存しました。', notifyKakaoPending: 'ブラウザーで Kakao ログインを完了してください。', notifyForegroundSkipped: 'コーディング画面が前面のため通知をスキップしました。',
   },
   zh: {
     resize: '拖动调整大小 · 双击恢复', charMode: '角色模式', hotkeys: '快捷键', hkToggle: '迷你开/关', hkFull: '显示/隐藏小部件', hkPress: '请按键…',
     hkNone: '无', hkBusy: '该键已被其他程序占用', hkHint: 'Esc 取消 · Backspace 清除',
     miniTip: '{s}: 5小时 {p5}% (重置 {r5}) · 每周 {pw}% (重置 {rw})',
-    b_fresh: '精神满满!', b_ok: '努力工作中', b_tired: '有点累了…', b_dizzy: '到极限了! 😵', b_sleep: '呼呼… 等待重置', b_none: '请连接我',
+    b_fresh: '电量充足!', b_ok: '能量满满，努力工作中', b_tired: '电量正在下降…', b_dizzy: '电量快用完了! 😵', b_sleep: '等待重置充电…', b_none: '连接后查看剩余电量',
     codexLoginSeen: '已检测到 Codex 登录信息，用量来自本地 Codex 会话日志。', codexLoginMissing: '未找到 Codex 登录文件，请先登录 Codex CLI。', codexLoginMissingS: '请登录', codexUsagePending: '没有找到用量记录。使用 Codex 后刷新。', codexUsagePendingS: '等待用量', codexReadError: '无法读取 Codex 用量日志。请重启 Codex 或检查日志文件权限。', codexReadErrorS: '读取错误',
     notifyTitle: '任务完成消息', notifyOn: '启用通知', notifyProvider: '发送到', notifyTelegram: 'Telegram', notifyKakao: 'Kakao（发给自己）', notifyMin: '最短任务（分钟）', notifySkipForeground: '小组件或编码窗口置前时跳过', notifyBotToken: 'Bot Token', notifyChatId: 'Chat ID', notifyFindChat: '查找 Chat ID', notifySave: '保存令牌', notifyTest: '发送测试消息',
     notifyTelegramHelp: '用 BotFather 创建机器人，向它发送 /start，再保存令牌并查找 Chat ID。', notifyKakaoKey: 'REST API 密钥', notifyKakaoSecret: 'Client Secret（可选）', notifyKakaoConnect: '连接 Kakao 登录', notifyKakaoDisconnect: '断开', notifyKakaoHelp: '启用 Kakao 登录和 talk_message 授权，并登记下方 URI 与 GitHub 域名。',
-    notifyHooksTitle: 'Claude Code · Codex 任务检测', notifyHooksInstall: '安装完成钩子', notifyHooksRemove: '移除钩子', notifyHooksHelp: '先备份配置再添加钩子。不发送提示词或对话内容，仅通过本机回环发送开始/结束信号。Codex 重启后请在 /hooks 中检查并信任新钩子。', notifyStateReady: '已连接', notifyStateNeedTelegram: '请设置 Bot Token 和 Chat ID。', notifyStateNeedKakao: '请用 Kakao REST 密钥登录连接。', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: '钩子已安装，请重启 Claude Code/Codex。', notifyRemoved: '已移除 AI Crew 添加的钩子。', notifyConfirmInstall: '将修改 Claude 和 Codex 用户配置，并创建备份。继续吗？', notifyConfirmRemove: '只移除 AI Crew 添加的钩子吗？', notifyCopied: '已保存。', notifyKakaoPending: '请在浏览器中完成 Kakao 登录。', notifyForegroundSkipped: '编码窗口在前台，已跳过通知。',
+    notifyHooksTitle: 'Claude Code · Codex 任务检测', notifyHooksInstall: '安装完成钩子', notifyHooksRemove: '移除钩子', notifyHooksHelp: '先备份配置再添加钩子。不发送提示词或对话内容，仅通过本机回环发送开始/结束信号。Codex 重启后请在 /hooks 中检查并信任新钩子。', notifyStateReady: '已连接', notifyStateNeedTelegram: '请设置 Bot Token 和 Chat ID。', notifyStateNeedKakao: '请用 Kakao REST 密钥登录连接。', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: '钩子已安装，请重启 Claude Code/Codex。', notifyRemoved: '已移除 TokenBattery 添加的钩子。', notifyConfirmInstall: '将修改 Claude 和 Codex 用户配置，并创建备份。继续吗？', notifyConfirmRemove: '只移除 TokenBattery 添加的钩子吗？', notifyCopied: '已保存。', notifyKakaoPending: '请在浏览器中完成 Kakao 登录。', notifyForegroundSkipped: '编码窗口在前台，已跳过通知。',
   },
   es: {
     resize: 'Arrastra para cambiar tamaño · doble clic para restablecer', charMode: 'Modo personaje', hotkeys: 'Atajos', hkToggle: 'Mini sí/no', hkFull: 'Mostrar / ocultar widget', hkPress: 'Pulsa una tecla…',
     hkNone: 'Ninguno', hkBusy: 'Otra app usa esta tecla', hkHint: 'Esc cancelar · Retroceso borrar',
     miniTip: '{s}: 5 h {p5}% (reinicio {r5}) · semanal {pw}% (reinicio {rw})',
-    b_fresh: '¡Con energía!', b_ok: 'Trabajando duro', b_tired: 'Algo cansado…', b_dizzy: '¡Al límite! 😵', b_sleep: 'Zzz… esperando reinicio', b_none: 'Conéctame',
+    b_fresh: '¡Carga completa!', b_ok: 'Energía de sobra · trabajando', b_tired: 'La batería va bajando…', b_dizzy: '¡Queda muy poca carga! 😵', b_sleep: 'Esperando la recarga del reinicio…', b_none: 'Conecta para ver la carga',
     codexLoginSeen: 'Inicio de sesión de Codex detectado. El uso se lee de los registros locales de sesión.', codexLoginMissing: 'No se encontró el inicio de sesión de Codex. Inicia sesión en Codex CLI.', codexLoginMissingS: 'Inicia sesión', codexUsagePending: 'No hay registro de uso. Usa Codex y actualiza.', codexUsagePendingS: 'Esperando', codexReadError: 'No se pudieron leer los registros de uso de Codex. Reinicia Codex o revisa el acceso a los archivos.', codexReadErrorS: 'Error de lectura',
     notifyTitle: 'Mensajes al terminar tareas', notifyOn: 'Activar avisos', notifyProvider: 'Enviar a', notifyTelegram: 'Telegram', notifyKakao: 'Kakao (a mí)', notifyMin: 'Duración mínima (min)', notifySkipForeground: 'Omitir si el widget o una ventana de código está al frente', notifyBotToken: 'Bot Token', notifyChatId: 'Chat ID', notifyFindChat: 'Buscar Chat ID', notifySave: 'Guardar token', notifyTest: 'Enviar prueba',
     notifyTelegramHelp: 'Crea un bot con BotFather, envíale /start, guarda el token y busca el Chat ID.', notifyKakaoKey: 'Clave REST API', notifyKakaoSecret: 'Client Secret (opcional)', notifyKakaoConnect: 'Conectar Kakao', notifyKakaoDisconnect: 'Desconectar', notifyKakaoHelp: 'Activa Kakao Login y talk_message, y registra la URI y el dominio GitHub indicados.',
-    notifyHooksTitle: 'Detección de tareas Claude Code · Codex', notifyHooksInstall: 'Instalar hooks', notifyHooksRemove: 'Quitar hooks', notifyHooksHelp: 'Se respaldan las configuraciones antes de añadir hooks. No se envía el texto de las conversaciones, solo señales locales. Tras reiniciar Codex, revisa y confía los hooks con /hooks.', notifyStateReady: 'Conectado', notifyStateNeedTelegram: 'Configura el Bot Token y el Chat ID.', notifyStateNeedKakao: 'Conecta Kakao con una clave REST.', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: 'Hooks instalados. Reinicia Claude Code/Codex.', notifyRemoved: 'Se quitaron solo los hooks de AI Crew.', notifyConfirmInstall: 'Se modificarán los ajustes de Claude y Codex con copias de seguridad. ¿Continuar?', notifyConfirmRemove: '¿Quitar solo los hooks añadidos por AI Crew?', notifyCopied: 'Guardado.', notifyKakaoPending: 'Completa el inicio de sesión de Kakao en el navegador.', notifyForegroundSkipped: 'Aviso omitido porque una ventana de código está al frente.',
+    notifyHooksTitle: 'Detección de tareas Claude Code · Codex', notifyHooksInstall: 'Instalar hooks', notifyHooksRemove: 'Quitar hooks', notifyHooksHelp: 'Se respaldan las configuraciones antes de añadir hooks. No se envía el texto de las conversaciones, solo señales locales. Tras reiniciar Codex, revisa y confía los hooks con /hooks.', notifyStateReady: 'Conectado', notifyStateNeedTelegram: 'Configura el Bot Token y el Chat ID.', notifyStateNeedKakao: 'Conecta Kakao con una clave REST.', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: 'Hooks instalados. Reinicia Claude Code/Codex.', notifyRemoved: 'Se quitaron solo los hooks de TokenBattery.', notifyConfirmInstall: 'Se modificarán los ajustes de Claude y Codex con copias de seguridad. ¿Continuar?', notifyConfirmRemove: '¿Quitar solo los hooks añadidos por TokenBattery?', notifyCopied: 'Guardado.', notifyKakaoPending: 'Completa el inicio de sesión de Kakao en el navegador.', notifyForegroundSkipped: 'Aviso omitido porque una ventana de código está al frente.',
   },
 };
 for (const l of Object.keys(I18N_EXTRA)) Object.assign(I18N[l], I18N_EXTRA[l]);
@@ -288,7 +293,7 @@ const CHAR_WORLD = {
   editorial: { ko: ['남은 주문', '주간 원두', '다음 오픈', '부엉이 편집장', '잉크 레이븐'], en: ['Orders left', 'Weekly beans', 'Opens in', 'Owl Editor', 'Ink Raven'], ja: ['残り注文', '週間の豆', '次の開店', 'フクロウ編集長', 'インクのワタリガラス'], zh: ['剩余订单', '每周咖啡豆', '下次开门', '猫头鹰编辑', '墨水乌鸦'], es: ['Pedidos', 'Café semanal', 'Abre en', 'Búho editor', 'Cuervo de tinta'] },
 };
 
-// ---------- AI CREW 전체 모드 문구 ----------
+// ---------- TokenBattery 전체 모드 문구 ----------
 const I18N_CREW = {
   ko: {
     sync: '동기화', bgmPlay: 'BGM 재생 (유튜브)', basisLbl: '한도 표시', basisRemain: '남은 한도', basisUsed: '사용량',

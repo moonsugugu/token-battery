@@ -1,4 +1,4 @@
-/* AI CREW visual pass: illustrated stages, expressive cast, and richer surfaces. */
+/* TokenBattery visual pass: illustrated stages, expressive cast, and richer surfaces. */
 .card.full {
   border-radius: calc(var(--radius) + 5px);
   border-color: color-mix(in srgb, var(--panel-bd) 80%, transparent);
@@ -618,6 +618,34 @@
 }
 
 .card.full .titlebar .made-by { font-size: 9px; }
+
+.battery-mark {
+  position: relative;
+  flex: none;
+  width: 13px;
+  height: 8px;
+  margin-left: -4px;
+  border: 1.5px solid var(--ok);
+  border-radius: 2.5px;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--ok) 55%, transparent));
+}
+.battery-mark::after {
+  position: absolute;
+  top: 1.5px;
+  right: -3.5px;
+  width: 2px;
+  height: 3px;
+  border-radius: 0 1px 1px 0;
+  background: var(--ok);
+  content: '';
+}
+.battery-mark i {
+  position: absolute;
+  inset: 1px auto 1px 1px;
+  width: 68%;
+  border-radius: 1px;
+  background: linear-gradient(90deg, var(--ok), color-mix(in srgb, var(--ok) 62%, #fff));
+}
 
 /* 전체 모드는 가용 화면 높이에 맞춰 고정하고, 넘친 콘텐츠를 카드 안에서 스크롤한다. */
 .card.full {

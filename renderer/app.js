@@ -55,6 +55,15 @@ function resetDisplay(ts, { date = false, expired = '–' } = {}) {
   if (ts <= Date.now()) return expired;
   return useResetClock() ? (date ? fmtClock(ts) : fmtClockTime(ts)) : fmtShort(ts - Date.now());
 }
+// 시간 표시 설정은 5시간 창에만 적용한다. 주간 창은 항상 남은 기간으로 보여준다.
+function weeklyResetDisplay(ts) {
+  if (!ts) return '–';
+  const left = ts - Date.now();
+  if (left <= 0) return t('resetDone');
+  if (left < 60000) return t('min', { n: 1 });
+  const days = Math.ceil(left / 86400000);
+  return days > 0 ? t('dayS', { d: days }) : fmtDur(left);
+}
 const expiredW = (w) => w && w.resetsAt && w.resetsAt < Date.now();
 const remainOf = (w) => (w ? (expiredW(w) ? 100 : 100 - clampPct(w)) : null);
 const shown = (w) => (w ? (useRemain() ? remainOf(w) : expiredW(w) ? 0 : clampPct(w)) : null);
@@ -64,7 +73,7 @@ const dangerColor = (v) => {
   return used >= 85 ? 'var(--bad)' : used >= 70 ? 'var(--warn)' : null;
 };
 
-// ---------- 전체 모드: AI CREW 카드 ----------
+// ---------- 전체 모드: TokenBattery 카드 ----------
 const SRC_KEY = { oauth: 'src_oauth', web: 'src_web', manual: 'src_manual', 'codex-log': 'src_codex' };
 const BADGE = { fresh: ['✓', 'good'], ok: ['✓', 'good'], tired: ['!', 'warn'], dizzy: ['!', 'bad'], sleep: ['z', 'bad'], none: ['?', 'none'] };
 function ringSVG(v, color) {
@@ -139,7 +148,7 @@ function renderUsage() {
   $('recover').innerHTML = ['claude', 'codex'].filter(svcOn).map((x) => {
     const d = svcData(x);
     const l5 = d && d.fiveHour ? resetDisplay(d.fiveHour.resetsAt) : '–';
-    const lw = d && d.weekly ? resetDisplay(d.weekly.resetsAt, { date: true }) : '–';
+    const lw = d && d.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–';
     return `<span class="rc"><i class="rdot ${x}"></i>${SVC[x]} <b>${l5}</b><small>${t('weekShort')} ${lw}</small></span>`;
   }).join('<span class="rsep"></span>');
 
@@ -151,10 +160,10 @@ function renderUsage() {
 }
 
 // ---------- 미니 모드: 퍼센트와 리셋 시간만 ----------
-function miniCell(w) {
+function miniCell(w, weekly = false) {
   if (!w) return '<b style="color:var(--muted)">–</b><em></em>';
   const v = shown(w);
-  const reset = resetDisplay(w.resetsAt);
+  const reset = weekly ? weeklyResetDisplay(w.resetsAt) : resetDisplay(w.resetsAt);
   return `<b style="color:${dangerColor(v) || 'var(--text)'}">${v}%</b><em>${reset === t('resetDone') ? '–' : reset}</em>`;
 }
 function renderMini() {
@@ -171,10 +180,10 @@ function renderMini() {
     }
     const tip = t('miniTip', {
       s: SVC[s],
-      p5: d.fiveHour ? clampPct(d.fiveHour) : '–', r5: d.fiveHour ? fmtClock(d.fiveHour.resetsAt) : '–',
-      pw: d.weekly ? clampPct(d.weekly) : '–', rw: d.weekly ? fmtClock(d.weekly.resetsAt) : '–',
+      p5: d.fiveHour ? clampPct(d.fiveHour) : '–', r5: d.fiveHour ? resetDisplay(d.fiveHour.resetsAt, { date: true }) : '–',
+      pw: d.weekly ? clampPct(d.weekly) : '–', rw: d.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–',
     });
-    rows.push(`<span class="mdot ${s}" title="${esc(tip)}"></span>${miniCell(d.fiveHour)}<i class="msep"></i>${miniCell(d.weekly)}`);
+    rows.push(`<span class="mdot ${s}" title="${esc(tip)}"></span>${miniCell(d.fiveHour)}<i class="msep"></i>${miniCell(d.weekly, true)}`);
   }
   $('miniRows').innerHTML = rows.length ? rows.join('') : `<span class="mneed">${t('turnOn')}</span>`;
   fit();
@@ -199,7 +208,7 @@ function renderChar() {
     const reset = d && d.fiveHour && d.fiveHour.resetsAt && d.fiveHour.resetsAt > Date.now()
       ? `↻ ${useResetClock() ? t('resetAt') : world[2]} ${resetDisplay(d.fiveHour.resetsAt)}` : '';
     const wReset = d && d.weekly && d.weekly.resetsAt
-      ? (d.weekly.resetsAt > Date.now() ? `${t('weekShort')} ↻ ${resetDisplay(d.weekly.resetsAt, { date: true })}` : `${t('weekShort')} ↻ ${t('resetDone')}`)
+      ? `${t('weekShort')} ↻ ${weeklyResetDisplay(d.weekly.resetsAt)}`
       : `${t('weekShort')} ↻ –`;
     html.push(`
       <div class="actor st-${st}" ${!d && s === 'claude' ? 'data-act="expand-login"' : ''}>

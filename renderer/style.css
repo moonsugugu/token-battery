@@ -525,7 +525,7 @@ body.near .ctrl .icon:hover { opacity: 1; }
 .grip::before { inset: 3px; }
 
 /* =========================================================
-   AI CREW — 전체 모드 레이아웃 (테마 변수로 10가지 디자인에 맞춰짐)
+   TokenBattery — 전체 모드 레이아웃 (테마 변수로 10가지 디자인에 맞춰짐)
    ========================================================= */
 :root {
   --portrait: radial-gradient(circle at 50% 62%, color-mix(in srgb, var(--svc) 22%, transparent), transparent 70%), var(--input-bg);
@@ -769,7 +769,7 @@ canvas.pixchar.mono { filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(4
 .theme-crt .brand-btn, .theme-crt .made-by { font-size: 12px; }
 
 /* =========================================================
-   AI CREW 제품형 리디자인 — 정보 위계와 캐릭터 카드 정리
+   TokenBattery 제품형 리디자인 — 정보 위계와 캐릭터 카드 정리
    ---------------------------------------------------------
    테마별 색·질감은 위에서 유지하고, 전체 모드의 공통 레이아웃만
    하나의 제품처럼 정돈한다. 숫자 → 리셋 → 보조 기능 순서로 읽힌다.

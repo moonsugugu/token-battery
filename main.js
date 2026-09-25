@@ -1,4 +1,4 @@
-// AI 크루 (AI CREW) — 항상 위에 떠 있는 Claude/Codex 한도 + 구독 + BGM 위젯 · made by 문수네집
+// TokenBattery (토큰배터리) — Claude/Codex 사용 한도를 배터리처럼 보여주는 위젯 · made by 문수네집
 const { app, BrowserWindow, ipcMain, shell, screen, Menu, Tray, nativeImage, Notification, globalShortcut, safeStorage } = require('electron');
 const fsSync = require('fs');
 const path = require('path');
@@ -215,7 +215,7 @@ function secretBridgeToken(secrets) {
 function htmlResponse(res, status, message) {
   const safe = String(message).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   res.writeHead(status, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
-  res.end(`<!doctype html><meta charset="utf-8"><title>AI Crew</title><body style="font:16px sans-serif;padding:40px">${safe}<p>이 창을 닫고 AI Crew로 돌아가세요.</p></body>`);
+  res.end(`<!doctype html><meta charset="utf-8"><title>TokenBattery</title><body style="font:16px sans-serif;padding:40px">${safe}<p>이 창을 닫고 TokenBattery로 돌아가세요.</p></body>`);
 }
 
 async function requestBody(req, limit = 8192) {
@@ -392,8 +392,8 @@ async function deliverNotification(text) {
     const token = await ensureKakaoAccessToken();
     const template = {
       object_type: 'text', text: text.slice(0, 200),
-      link: { web_url: 'https://github.com/moonsugugu/ai-crew-widget', mobile_web_url: 'https://github.com/moonsugugu/ai-crew-widget' },
-      button_title: 'AI Crew 열기',
+      link: { web_url: 'https://github.com/moonsugugu/token-battery', mobile_web_url: 'https://github.com/moonsugugu/token-battery' },
+      button_title: 'TokenBattery 열기',
     };
     const response = await fetch('https://kapi.kakao.com/v2/api/talk/memo/default/send', {
       method: 'POST',
@@ -671,7 +671,7 @@ async function findTelegramChat() {
 }
 
 async function testNotification() {
-  const result = await deliverNotification('AI Crew 알림 테스트입니다. 연결이 잘 되었어요!');
+  const result = await deliverNotification('TokenBattery 알림 테스트입니다. 연결이 잘 되었어요!');
   notifyRenderer({ ok: true, message: result });
   return { ok: true, message: result };
 }
@@ -801,7 +801,7 @@ function createWindow() {
     alwaysOnTop: true,
     skipTaskbar: false,
     hasShadow: false,
-    title: 'AI Crew',
+    title: 'TokenBattery',
     icon: ICON,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
   });
@@ -816,7 +816,7 @@ function createWindow() {
   win.on('resized', remember);
 }
 
-let trayLabels = { tip: 'AI Crew', toggle: 'Show / Hide', reset: 'Reset position', quit: 'Quit' };
+let trayLabels = { tip: 'TokenBattery · Claude/Codex limits', toggle: 'Show / Hide', reset: 'Reset position', quit: 'Quit' };
 function resetPosition() {
   store.bounds = null;
   saveStore();
@@ -960,9 +960,11 @@ ipcMain.handle('app:autostart', (_e, on) => {
 });
 
 // ---------- 시작 ----------
-app.setAppUserModelId('com.moonsunezip.ai-usage-widget');
+app.setName('TokenBattery');
+app.setAppUserModelId('com.moonsunezip.tokenbattery');
 // 개발 확인용 스냅샷 모드는 실제 설정을 건드리지 않도록 별도 폴더 사용
-if (process.env.WIDGET_SNAPSHOT) app.setPath('userData', path.join(os.tmpdir(), 'ai-usage-widget-snapshot'));
+if (process.env.WIDGET_SNAPSHOT) app.setPath('userData', path.join(os.tmpdir(), 'token-battery-snapshot'));
+else app.setPath('userData', path.join(app.getPath('appData'), 'ai-usage-widget')); // 이름 변경 후에도 기존 설정·로그인을 유지
 // 일부 PC(보안 프로그램·샌드박스 환경)에서 GPU 샌드박스가 뜨지 않아 앱이 바로 꺼지는 문제 방지
 app.commandLine.appendSwitch('disable-gpu-sandbox');
 // 한국 금융·키보드 보안 프로그램(AhnLab Safe Transaction, nProtect 등)이 설치된 PC에서는
