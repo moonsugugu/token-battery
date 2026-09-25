@@ -618,3 +618,49 @@
 }
 
 .card.full .titlebar .made-by { font-size: 9px; }
+
+/* 전체 모드는 가용 화면 높이에 맞춰 고정하고, 넘친 콘텐츠를 카드 안에서 스크롤한다. */
+.card.full {
+  max-height: var(--full-max-height, none);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.card.full::-webkit-scrollbar { width: 8px; }
+.card.full::-webkit-scrollbar-track { background: color-mix(in srgb, var(--panel) 70%, transparent); border-radius: 8px; }
+.card.full::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--claude) 58%, var(--codex));
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
+}
+.card.full::-webkit-scrollbar-thumb:hover { background: var(--accent); background-clip: padding-box; }
+
+.notifyconfig {
+  display: grid;
+  gap: 7px;
+  margin-top: 7px;
+  padding: 8px;
+  border: 1px solid var(--panel-bd);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+}
+.notifyconfig .row { gap: 6px; flex-wrap: wrap; }
+.notify-head { justify-content: space-between; }
+.notifyconfig label { min-width: 0; }
+.notifyconfig select,
+.notifyconfig input:not([type="checkbox"]) {
+  min-width: 0;
+  max-width: 170px;
+  padding: 5px 7px;
+}
+.notify-field { display: grid; gap: 3px; color: var(--muted); font-size: 10px; }
+.notify-field input { width: 100%; max-width: none !important; }
+.notify-check { color: var(--muted); font-size: 10px; }
+.notify-actions { align-items: center; justify-content: flex-start; }
+.notify-actions .smeta { flex: 1 1 120px; }
+.notifyconfig .note { font-size: 9.5px; line-height: 1.45; }
+.notifyconfig code { user-select: text; overflow-wrap: anywhere; color: var(--text); }
+.notify-hookbox { display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
+.notify-result:not(:empty) { padding: 5px 7px; border-radius: 7px; background: color-mix(in srgb, var(--accent) 12%, transparent); }

@@ -93,6 +93,35 @@
       <button class="chip" id="btnClaudeLogin2" data-i18n="claudeLogin"></button>
       <button class="chip" id="btnManual2" data-i18n="claudeManual"></button>
     </div>
+    <section class="notifyconfig">
+      <div class="row notify-head"><b data-i18n="notifyTitle"></b><label><input type="checkbox" id="notifyEnabled"> <span data-i18n="notifyOn"></span></label></div>
+      <div class="row">
+        <label><span data-i18n="notifyProvider"></span>
+          <select id="notifyProvider"><option value="telegram" data-i18n="notifyTelegram"></option><option value="kakao" data-i18n="notifyKakao"></option></select>
+        </label>
+        <label><span data-i18n="notifyMin"></span> <input id="notifyMinMinutes" type="number" min="1" max="1440" step="1" value="10"></label>
+      </div>
+      <label class="row notify-check"><input type="checkbox" id="notifySkipForeground"> <span data-i18n="notifySkipForeground"></span></label>
+      <div class="notify-provider" id="telegramPane">
+        <label class="notify-field"><span data-i18n="notifyBotToken"></span><input id="telegramBotToken" type="password" autocomplete="off" spellcheck="false"></label>
+        <label class="notify-field"><span data-i18n="notifyChatId"></span><input id="telegramChatId" type="text" autocomplete="off" spellcheck="false"></label>
+        <div class="row notify-actions"><button class="chip ghost" id="btnTelegramSave" data-i18n="notifySave"></button><button class="chip ghost" id="btnTelegramFindChat" data-i18n="notifyFindChat"></button></div>
+        <div class="note" data-i18n="notifyTelegramHelp"></div>
+      </div>
+      <div class="notify-provider hidden" id="kakaoPane">
+        <label class="notify-field"><span data-i18n="notifyKakaoKey"></span><input id="kakaoRestKey" type="password" autocomplete="off" spellcheck="false"></label>
+        <label class="notify-field"><span data-i18n="notifyKakaoSecret"></span><input id="kakaoClientSecret" type="password" autocomplete="off" spellcheck="false"></label>
+        <div class="row notify-actions"><button class="chip ghost" id="btnKakaoConnect" data-i18n="notifyKakaoConnect"></button><button class="chip ghost" id="btnKakaoDisconnect" data-i18n="notifyKakaoDisconnect"></button></div>
+        <div class="note"><span data-i18n="notifyKakaoHelp"></span><br><code id="kakaoRedirectUri"></code></div>
+      </div>
+      <div class="row notify-actions"><button class="chip" id="btnNotificationTest" data-i18n="notifyTest"></button><span class="smeta" id="notifyConnectionState"></span></div>
+      <div class="notify-hookbox">
+        <div class="row"><b data-i18n="notifyHooksTitle"></b><span class="smeta" id="notifyHooksState"></span></div>
+        <div class="row notify-actions"><button class="chip ghost" id="btnInstallNotifyHooks" data-i18n="notifyHooksInstall"></button><button class="chip ghost" id="btnRemoveNotifyHooks" data-i18n="notifyHooksRemove"></button></div>
+        <div class="note" data-i18n="notifyHooksHelp"></div>
+      </div>
+      <div class="note notify-result" id="notifyResult" aria-live="polite"></div>
+    </section>
   </section>
 
   <!-- 오늘의 상태 -->
@@ -103,6 +132,7 @@
   </div>
   <div class="crew" id="crew"></div>
   <div class="note crew-note" id="claudeNote"></div>
+  <div class="note crew-note" id="codexNote"></div>
   <form class="panel manual hidden" id="manualForm">
     <div class="mgrid">
       <label><span data-i18n="m5"></span><input type="number" min="0" max="100" id="m5"></label>

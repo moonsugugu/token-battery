@@ -125,6 +125,11 @@ function renderUsage() {
   $('crew').classList.toggle('single', cards.length === 1);
   const claude = usage.claude;
   $('claudeNote').innerHTML = !svcOn('claude') ? '' : claude && claude.ok ? (claude.manual ? t('manualNote') : '') : t('needClaude');
+  const codex = usage.codex;
+  $('codexNote').textContent = !svcOn('codex') ? ''
+    : codex?.ok ? (codex.loggedIn ? t('codexLoginSeen') : '')
+      : codex?.code === 'codex-read-error' ? t('codexReadError')
+      : codex?.loggedIn ? t('codexUsagePending') : t('codexLoginMissing');
 
   // 오늘의 한마디: 가장 지친 캐릭터 기준
   const states = ['claude', 'codex'].filter(svcOn).map((x) => charState(svcData(x)));
@@ -158,8 +163,10 @@ function renderMini() {
   for (const s of ['claude', 'codex']) {
     if (!svcOn(s)) continue;
     const d = svcData(s);
-    if (!d) {
-      rows.push(`<span class="mdot ${s}"></span><span class="mneed" ${s === 'claude' ? 'data-act="expand-login"' : ''}>${s === 'claude' ? t('needShort') : t('codexNoneS')}</span>`);
+      if (!d) {
+      const codexState = usage.codex?.code === 'codex-read-error' ? t('codexReadErrorS')
+        : usage.codex?.loggedIn ? t('codexUsagePendingS') : t('codexLoginMissingS');
+      rows.push(`<span class="mdot ${s}"></span><span class="mneed" ${s === 'claude' ? 'data-act="expand-login"' : ''}>${s === 'claude' ? t('needShort') : codexState}</span>`);
       continue;
     }
     const tip = t('miniTip', {
@@ -517,6 +524,57 @@ function fillSelect(el, items, value) {
   el.innerHTML = items.map(([v, label]) => `<option value="${esc(v)}">${esc(label)}</option>`).join('');
   if (value != null) el.value = value;
 }
+function setNotifyMessage(message, ok = true) {
+  $('notifyResult').textContent = message || '';
+  $('notifyResult').classList.toggle('bad', !ok);
+}
+async function refreshNotificationSettings() {
+  try {
+    const state = await W.notificationState();
+    const prefs = state.preferences || {};
+    $('notifyEnabled').checked = prefs.enabled === true;
+    $('notifyProvider').value = prefs.provider || 'telegram';
+    $('notifyMinMinutes').value = prefs.minDurationMinutes || 10;
+    $('notifySkipForeground').checked = prefs.suppressWhenForeground !== false;
+    $('telegramPane').classList.toggle('hidden', $('notifyProvider').value !== 'telegram');
+    $('kakaoPane').classList.toggle('hidden', $('notifyProvider').value !== 'kakao');
+    $('kakaoRedirectUri').textContent = state.kakaoRedirectUri || '';
+    const providerReady = $('notifyProvider').value === 'kakao'
+      ? state.kakaoConnected
+      : state.telegramConfigured && state.telegramChatConfigured;
+    $('notifyConnectionState').textContent = providerReady ? t('notifyStateReady')
+      : $('notifyProvider').value === 'kakao' ? t('notifyStateNeedKakao') : t('notifyStateNeedTelegram');
+    $('notifyHooksState').textContent = t('notifyHooksReady', {
+      claude: state.hooks?.claude ? '✓' : '—', codex: state.hooks?.codex ? '✓' : '—',
+    });
+    if (state.lastResult?.message) setNotifyMessage(state.lastResult.message, state.lastResult.ok);
+  } catch (error) {
+    setNotifyMessage(error.message, false);
+  }
+}
+async function saveNotifyPreferences() {
+  await W.setNotificationPreferences({
+    enabled: $('notifyEnabled').checked,
+    provider: $('notifyProvider').value,
+    minDurationMinutes: Number($('notifyMinMinutes').value) || 10,
+    suppressWhenForeground: $('notifySkipForeground').checked,
+  });
+  await refreshNotificationSettings();
+}
+async function notifyAction(button, action) {
+  button.disabled = true;
+  try {
+    const result = await action();
+    if (result?.message) setNotifyMessage(result.message, result.ok !== false);
+    await refreshNotificationSettings();
+    return result;
+  } catch (error) {
+    setNotifyMessage(error.message, false);
+    return null;
+  } finally {
+    button.disabled = false;
+  }
+}
 function applyLang(lang) {
   LANG = I18N[lang] ? lang : 'ko';
   document.documentElement.lang = LANG;
@@ -531,6 +589,7 @@ function applyLang(lang) {
   renderUsage();
   renderMini();
   renderChar();
+  refreshNotificationSettings();
 }
 $('langSel').onchange = async () => { store = await W.setStore({ lang: $('langSel').value }); applyLang(store.lang); };
 
@@ -576,12 +635,26 @@ for (const c of document.querySelectorAll('.lvl')) {
 let mode = 'mini';
 const CARD = { mini: 'miniCard', char: 'charCard', full: 'card' };
 let fitAnchor = 'right';
+let fitRequest = 0;
 function fit() {
+  const request = ++fitRequest;
   requestAnimationFrame(() => {
     const el = $(CARD[mode]);
-    // 미니·캐릭터 카드는 내용 크기만큼만(inline) 잡혀서 그 크기로 창을 맞춘다 (배율은 main에서 곱함)
     const width = mode === 'full' ? 392 : el.offsetWidth + 8;
-    W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor);
+    W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor).then(async (bounds) => {
+      if (request !== fitRequest) return;
+      if (mode === 'full' && bounds?.maxFullCardHeight) {
+        const maxHeight = `${bounds.maxFullCardHeight}px`;
+        if (el.style.maxHeight !== maxHeight) {
+          el.style.maxHeight = maxHeight;
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+        }
+      } else if (mode !== 'full') {
+        $('card').style.maxHeight = '';
+      }
+      if (request !== fitRequest) return;
+      W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor);
+    }).catch(() => {});
   });
 }
 
@@ -652,6 +725,7 @@ async function openSettings() {
   $('settings').classList.remove('hidden');
   $('autostart').checked = await W.autostart();
   renderHotkeys();
+  refreshNotificationSettings();
   fit();
 }
 document.addEventListener('click', (e) => {
@@ -737,6 +811,49 @@ $('opacity').oninput = (e) => W.setOpacity(Number(e.target.value));
 $('autostart').onchange = (e) => W.autostart(e.target.checked);
 $('btnClaudeLogin2').onclick = () => W.claudeLogin();
 $('btnManual2').onclick = () => toggleManual(true);
+for (const id of ['notifyEnabled', 'notifyProvider', 'notifySkipForeground', 'notifyMinMinutes']) {
+  $(id).onchange = () => saveNotifyPreferences().catch((error) => setNotifyMessage(error.message, false));
+}
+$('btnTelegramSave').onclick = () => notifyAction($('btnTelegramSave'), async () => {
+  const result = await W.saveTelegramCredentials({ botToken: $('telegramBotToken').value, chatId: $('telegramChatId').value });
+  $('telegramBotToken').value = '';
+  return { ...result, message: result.chatConfigured ? t('notifyStateReady') : t('notifyCopied') };
+});
+$('btnTelegramFindChat').onclick = () => notifyAction($('btnTelegramFindChat'), async () => {
+  const result = await W.findTelegramChat();
+  $('telegramChatId').value = result.chatId;
+  return { ...result, message: t('notifyStateReady') };
+});
+$('btnKakaoConnect').onclick = () => notifyAction($('btnKakaoConnect'), async () => {
+  await W.connectKakao({ appKey: $('kakaoRestKey').value, clientSecret: $('kakaoClientSecret').value });
+  setNotifyMessage(t('notifyKakaoPending'), true);
+  return { ok: true };
+});
+$('btnKakaoDisconnect').onclick = () => {
+  notifyAction($('btnKakaoDisconnect'), () => W.disconnectKakao());
+};
+$('btnNotificationTest').onclick = () => notifyAction($('btnNotificationTest'), () => W.testNotification());
+$('btnInstallNotifyHooks').onclick = () => {
+  if (!confirm(t('notifyConfirmInstall'))) return;
+  notifyAction($('btnInstallNotifyHooks'), async () => {
+    const result = await W.installNotificationHooks();
+    const status = await W.notificationState();
+    const state = t('notifyHooksReady', { claude: status.hooks?.claude ? '✓' : '—', codex: status.hooks?.codex ? '✓' : '—' });
+    const problems = [result.claudeError, result.codexError].filter(Boolean).join(' · ');
+    return { ok: result.hooksInstalled, message: problems || (result.hooksInstalled ? `${t('notifyInstalled')} ${state}` : state) };
+  });
+};
+$('btnRemoveNotifyHooks').onclick = () => {
+  if (!confirm(t('notifyConfirmRemove'))) return;
+  notifyAction($('btnRemoveNotifyHooks'), async () => {
+    await W.removeNotificationHooks();
+    return { ok: true, message: t('notifyRemoved') };
+  });
+};
+W.onNotificationStatus((status) => {
+  if (status?.message) setNotifyMessage(status.message, status.ok);
+  refreshNotificationSettings();
+});
 document.addEventListener('click', (e) => {
   const act = e.target.dataset && e.target.dataset.act;
   if (act === 'login') W.claudeLogin();
