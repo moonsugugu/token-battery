@@ -130,12 +130,6 @@ const PROPS = {
 
 // Every theme gets its own cast. The character silhouette, face, and props change
 // with the visual world, while the quota state still drives the expression.
-const LOOK = {
-  cyber: {}, engine: {}, mascot: {}, arcade: { claude: { pixel: 40 }, codex: { pixel: 40 } },
-  glass: {}, crt: { claude: { pixel: 36, mono: true }, codex: { pixel: 36, mono: true } },
-  industrial: {}, garden: {}, anime: {}, editorial: {},
-};
-
 function expression(state, { x1 = 46, x2 = 74, y = 61, mouthY = 78, ink = '#49362f', glow = null } = {}) {
   const stroke = glow || ink;
   let eyes;
@@ -219,25 +213,9 @@ function uniqueIds(svg) {
   return svg.replace(/id="([^"]+)"/g, `id="$1_${n}"`).replace(/url\(#([^)]+)\)/g, `url(#$1_${n})`);
 }
 
-// 아케이드·CRT: 작은 캔버스에 그린 뒤 확대해서 도트 느낌을 낸다
-const pixelCache = new Map();
 function drawCharacter(theme, svc, state) {
-  const look = (LOOK[theme] || LOOK.cyber)[svc] || {};
-  const svg = characterSVG(theme, svc, state);
-  if (!look.pixel) return svg;
-  const key = `${theme}:${svc}:${state}`;
-  return `<canvas class="pixchar${look.mono ? ' mono' : ''}" width="${look.pixel}" height="${Math.round(look.pixel * 124 / 120)}" data-pix="${key}"></canvas>`
-    + `<template data-pix-src="${key}">${svg}</template>`;
-}
-function hydratePixels(root) {
-  for (const cv of root.querySelectorAll('canvas[data-pix]')) {
-    const key = cv.dataset.pix;
-    const draw = (img) => { const c = cv.getContext('2d'); c.clearRect(0, 0, cv.width, cv.height); c.drawImage(img, 0, 0, cv.width, cv.height); };
-    if (pixelCache.has(key)) { draw(pixelCache.get(key)); continue; }
-    const tpl = root.querySelector(`template[data-pix-src="${key}"]`);
-    if (!tpl) continue;
-    const img = new Image();
-    img.onload = () => { pixelCache.set(key, img); draw(img); };
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(tpl.innerHTML);
-  }
+  const safeTheme = CAST[theme] ? theme : 'cyber';
+  const safeSvc = svc === 'codex' ? 'codex' : 'claude';
+  const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
+  return `<span class="artchar artchar-${safeTheme} artchar-${safeSvc} st-${safeState}" aria-hidden="true"></span>`;
 }

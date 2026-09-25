@@ -112,7 +112,6 @@ function renderUsage() {
   const cards = ['claude', 'codex'].filter(svcOn).map(crewCard);
   $('crew').innerHTML = cards.length ? cards.join('') : `<div class="mneed">${t('turnOn')}</div>`;
   $('crew').classList.toggle('single', cards.length === 1);
-  hydratePixels($('crew'));
   const claude = usage.claude;
   $('claudeNote').innerHTML = !svcOn('claude') ? '' : claude && claude.ok ? (claude.manual ? t('manualNote') : '') : t('needClaude');
 
@@ -194,7 +193,6 @@ function renderChar() {
       </div>`);
   }
   $('scene').innerHTML = html.length ? html.join('') : `<div class="mneed">${t('turnOn')}</div>`;
-  hydratePixels($('scene'));
   fit();
 }
 // ---------- 사용량 알림 (70/85/95%) ----------
@@ -729,7 +727,7 @@ document.addEventListener('click', (e) => {
 });
 W.onRefresh(() => refresh());
 // 문수네집 링크 버튼 (기본 브라우저 새 창으로)
-for (const b of document.querySelectorAll('.brand-btn')) b.onclick = () => W.openUrl(b.dataset.link);
+for (const b of document.querySelectorAll('.brand-btn')) b.onclick = (e) => { e.preventDefault(); W.openUrl(b.href); };
 
 // ---------- 시작 ----------
 (async () => {

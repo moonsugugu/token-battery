@@ -3,9 +3,9 @@
 <img src="assets/icon.png" width="96" align="right" alt="AI 크루 아이콘">
 
 Claude와 Codex의 **5시간·주간 사용 한도**를 화면 위에 항상 띄워 두는 Windows 데스크톱 위젯이에요.
-고글 쓴 여우 파일럿(Claude)과 로봇(Codex)이 남은 한도에 따라 표정을 바꿔요.
+테마마다 전용으로 그린 배경과 서로 다른 캐릭터 듀오가 남은 한도를 보여줘요.
 
-made by [🏠 문수네집](https://moonsunezipbrand.vercel.app) · [📸 Instagram](https://www.instagram.com/moonsune.zip/) · [✨ moonsune.zip](https://moonsune-zip.vercel.app/)
+made by [🏠 문수네집](https://moonsunezipbrand.vercel.app) · [📸 Instagram](https://www.instagram.com/moonsune.zip/) · [✨ moonsune.zip](https://moonsunezip.com)
 
 ## 기능
 
@@ -13,7 +13,7 @@ made by [🏠 문수네집](https://moonsunezipbrand.vercel.app) · [📸 Instag
   - 미니: 퍼센트와 리셋 시간만 보이는 초소형
   - 캐릭터: 캐릭터 두 명, 남은 한도, 5시간·주간 리셋 시각
   - 전체: 오늘의 상태, 다음 회복, 구독 관리, BGM
-- **디자인 10가지**: 사이버 · 엔진 코어 · 마스코트 · 아케이드(도트) · 글래스 · CRT · 인더스트리얼 · 가든 · 애니 · 에디토리얼
+- **디자인 10가지**: 사이버 · 엔진 코어 · 마스코트 · 아케이드(도트) · 글래스 · CRT · 인더스트리얼 · 가든 · 애니 · 에디토리얼. 테마마다 전용 히어로 아트와 서로 다른 캐릭터 듀오가 적용돼요.
 - **사용량 알림**: 70 / 85 / 95%에 도달하면 윈도우 알림
 - **구독 관리**: 여러 AI 구독의 결제일(D-day)과 월 합계, 실제 사용률 대비 비용 분석
 - **코딩 BGM**: 분위기별 유튜브 긴 영상 검색
