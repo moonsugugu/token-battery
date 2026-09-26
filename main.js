@@ -84,7 +84,8 @@ function saveStore() {
 async function listRecentCodexFiles() {
   const files = [];
   const now = new Date();
-  for (let d = 0; d < 31; d++) {
+  // 오래전에 시작해 계속 이어지는 대화 파일도 있어서 넉넉히 찾고, 수정 시각 순으로 고른다
+  for (let d = 0; d < 120; d++) {
     const day = new Date(now.getTime() - d * 86400000);
     const dir = path.join(
       CODEX_SESSIONS,
@@ -151,7 +152,25 @@ async function codexLoginDetected() {
   }
 }
 
+// Codex 앱 로그인 정보(~/.codex/auth.json)로 ChatGPT의 실제 사용량을 바로 조회 (토큰 갱신은 Codex 앱에 맡김)
+async function codexViaApi() {
+  try {
+    const t = JSON.parse(await fs.readFile(CODEX_AUTH, 'utf8')).tokens;
+    if (!t?.access_token) return null;
+    const r = await fetch('https://chatgpt.com/backend-api/wham/usage', {
+      headers: { Authorization: `Bearer ${t.access_token}`, ...(t.account_id ? { 'chatgpt-account-id': t.account_id } : {}), 'User-Agent': 'codex_cli_rs', originator: 'codex_cli_rs' },
+    });
+    if (!r.ok) return null;
+    const rl = (await r.json()).rate_limit;
+    const win = (w) => (w ? { percent: w.reset_at * 1000 < Date.now() ? 0 : Number(w.used_percent) || 0, resetsAt: w.reset_at * 1000, windowMinutes: Math.round(w.limit_window_seconds / 60) } : null);
+    if (!rl || (!rl.primary_window && !rl.secondary_window)) return null;
+    return { ok: true, source: 'codex-log', loggedIn: true, updatedAt: Date.now(), fiveHour: win(rl.primary_window), weekly: win(rl.secondary_window) };
+  } catch { return null; }
+}
+
 async function getCodexUsage() {
+  const live = await codexViaApi();
+  if (live) return live;
   const files = await listRecentCodexFiles();
   const loggedIn = await codexLoginDetected();
   // Codex keeps rolling session logs that can grow very large. Search a wider,
@@ -952,7 +971,8 @@ ipcMain.handle('hotkeys:set', (_e, hk) => { store.hotkeys = hk; saveStore(); ret
 ipcMain.handle('hotkeys:suspend', () => globalShortcut.unregisterAll());
 ipcMain.handle('hotkeys:status', () => hotkeyStatus);
 app.on('will-quit', () => {
-  globalShortcut.unregisterAll();
+  // 준비 전(중복 실행으로 바로 종료할 때 등)에는 globalShortcut을 쓸 수 없다
+  if (app.isReady()) globalShortcut.unregisterAll();
   if (bridgeServer) bridgeServer.close();
 });
 
@@ -1000,12 +1020,21 @@ app.on('render-process-gone', (_e, wc, d) => {
 });
 
 if (!app.requestSingleInstanceLock()) {
-  app.quit();
+  // 이미 켜져 있으면 조용히 끝낸다 (app.exit은 will-quit 등 종료 이벤트를 건너뜀)
+  app.exit(0);
 } else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
   app.whenReady().then(async () => {
     await loadStore();
     log('start', { dir: __dirname, noSandbox });
+    // 이름 변경 전(AI 크루) 자동 실행 등록이 남아 있으면 부팅 때 두 번 켜지므로 지운다
+    try {
+      const legacy = { name: 'com.moonsunezip.ai-usage-widget', path: process.execPath, args: [path.resolve(__dirname)] };
+      if (app.getLoginItemSettings(legacy).openAtLogin) {
+        app.setLoginItemSettings({ ...legacy, openAtLogin: false });
+        log('removed legacy autostart entry');
+      }
+    } catch (error) { log('legacy autostart cleanup failed', error.message); }
     createWindow();
     createTray();
     registerHotkeys();
