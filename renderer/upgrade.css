@@ -691,4 +691,6 @@
 .notifyconfig .note { font-size: 9.5px; line-height: 1.45; }
 .notifyconfig code { user-select: text; overflow-wrap: anywhere; color: var(--text); }
 .notify-hookbox { display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
+.notify-hook-status:not(:empty) { padding: 5px 7px; border-radius: 7px; background: color-mix(in srgb, var(--accent) 12%, transparent); font-size: 10px; line-height: 1.45; }
+.notify-hook-status.warn { background: color-mix(in srgb, var(--claude) 16%, transparent); }
 .notify-result:not(:empty) { padding: 5px 7px; border-radius: 7px; background: color-mix(in srgb, var(--accent) 12%, transparent); }

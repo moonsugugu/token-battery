@@ -553,9 +553,15 @@ async function refreshNotificationSettings() {
       : state.telegramConfigured && state.telegramChatConfigured;
     $('notifyConnectionState').textContent = providerReady ? t('notifyStateReady')
       : $('notifyProvider').value === 'kakao' ? t('notifyStateNeedKakao') : t('notifyStateNeedTelegram');
+    const hooks = state.hooks || {};
     $('notifyHooksState').textContent = t('notifyHooksReady', {
-      claude: state.hooks?.claude ? '✓' : '—', codex: state.hooks?.codex ? '✓' : '—',
+      claude: hooks.claude ? '✓' : '—', codex: hooks.codex ? '✓' : '—',
     });
+    const missingHooks = [!hooks.claude && 'Claude Code', !hooks.codex && 'Codex'].filter(Boolean);
+    $('notifyHookSetupStatus').textContent = missingHooks.length
+      ? t('notifyHooksMissing', { services: missingHooks.join(', ') })
+      : prefs.enabled ? t('notifyHooksReadyNote') : '';
+    $('notifyHookSetupStatus').classList.toggle('warn', missingHooks.length > 0);
     if (state.lastResult?.message) setNotifyMessage(state.lastResult.message, state.lastResult.ok);
   } catch (error) {
     setNotifyMessage(error.message, false);
