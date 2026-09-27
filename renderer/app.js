@@ -548,6 +548,7 @@ async function refreshNotificationSettings() {
     $('telegramPane').classList.toggle('hidden', $('notifyProvider').value !== 'telegram');
     $('kakaoPane').classList.toggle('hidden', $('notifyProvider').value !== 'kakao');
     $('kakaoRedirectUri').textContent = state.kakaoRedirectUri || '';
+    $('notifyHelpRedirectUri').textContent = state.kakaoRedirectUri || '';
     const providerReady = $('notifyProvider').value === 'kakao'
       ? state.kakaoConnected
       : state.telegramConfigured && state.telegramChatConfigured;
@@ -590,12 +591,29 @@ async function notifyAction(button, action) {
     button.disabled = false;
   }
 }
+function renderNotifyGuide() {
+  const guide = NOTIFY_GUIDE_STEPS[LANG] || NOTIFY_GUIDE_STEPS.ko;
+  for (const [id, steps] of [
+    ['notifyHelpTelegramSteps', guide.telegram],
+    ['notifyHelpKakaoSteps', guide.kakao],
+    ['notifyHelpAgentSteps', guide.agents],
+  ]) {
+    const list = $(id);
+    list.replaceChildren(...steps.map((step) => {
+      const item = document.createElement('li');
+      item.textContent = step;
+      return item;
+    }));
+  }
+}
 function applyLang(lang) {
   LANG = I18N[lang] ? lang : 'ko';
   document.documentElement.lang = LANG;
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   for (const el of document.querySelectorAll('[data-i18n-title]')) el.title = t(el.dataset.i18nTitle);
+  for (const el of document.querySelectorAll('[data-i18n-aria-label]')) el.setAttribute('aria-label', t(el.dataset.i18nAriaLabel));
   for (const el of document.querySelectorAll('[data-i18n-ph]')) el.placeholder = t(el.dataset.i18nPh);
+  renderNotifyGuide();
   fillSelect($('langSel'), LANGS.map((l) => [l.id, l.name]), LANG);
   fillSelect($('themeSel'), THEMES.map((th, i) => [th.id, `${String(i + 1).padStart(2, '0')} ${THEME_NAMES[LANG][i]}`]), store.theme || 'cyber');
   fillSelect($('bgmMood'), MOOD_QUERIES.map(([id], i) => [id, MOOD_NAMES[LANG][i]]), store.bgmLast || 'lofi');
@@ -848,6 +866,14 @@ $('btnKakaoDisconnect').onclick = () => {
   notifyAction($('btnKakaoDisconnect'), () => W.disconnectKakao());
 };
 $('btnNotificationTest').onclick = () => notifyAction($('btnNotificationTest'), () => W.testNotification());
+$('btnNotifyHelp').onclick = () => $('notifyHelpDialog').showModal();
+for (const id of ['btnNotifyHelpClose', 'btnNotifyHelpDone']) $(id).onclick = () => $('notifyHelpDialog').close();
+$('notifyHelpDialog').addEventListener('click', (event) => {
+  if (event.target === $('notifyHelpDialog')) $('notifyHelpDialog').close();
+});
+for (const button of document.querySelectorAll('[data-guide-url]')) {
+  button.onclick = () => W.openUrl(button.dataset.guideUrl);
+}
 $('btnInstallNotifyHooks').onclick = () => {
   if (!confirm(t('notifyConfirmInstall'))) return;
   notifyAction($('btnInstallNotifyHooks'), async () => {

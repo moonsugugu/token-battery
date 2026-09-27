@@ -95,7 +95,7 @@
       <button class="chip" id="btnManual2" data-i18n="claudeManual"></button>
     </div>
     <section class="notifyconfig">
-      <div class="row notify-head"><b data-i18n="notifyTitle"></b><label><input type="checkbox" id="notifyEnabled"> <span data-i18n="notifyOn"></span></label></div>
+      <div class="row notify-head"><b data-i18n="notifyTitle"></b><div class="row notify-head-actions"><button type="button" class="chip ghost" id="btnNotifyHelp" data-i18n="notifyHelpOpen" aria-haspopup="dialog" aria-controls="notifyHelpDialog"></button><label><input type="checkbox" id="notifyEnabled"> <span data-i18n="notifyOn"></span></label></div></div>
       <div class="row">
         <label><span data-i18n="notifyProvider"></span>
           <select id="notifyProvider"><option value="telegram" data-i18n="notifyTelegram"></option><option value="kakao" data-i18n="notifyKakao"></option></select>
@@ -125,6 +125,52 @@
       <div class="note notify-result" id="notifyResult" aria-live="polite"></div>
     </section>
   </section>
+
+  <dialog class="notify-help-dialog" id="notifyHelpDialog" aria-labelledby="notifyHelpDialogTitle">
+    <div class="notify-help-head">
+      <div><div class="notify-help-eyebrow" data-i18n="notifyHelpEyebrow"></div><h2 id="notifyHelpDialogTitle" data-i18n="notifyHelpDialogTitle"></h2></div>
+      <button type="button" class="icon notify-help-close" id="btnNotifyHelpClose" data-i18n-title="notifyHelpClose" data-i18n-aria-label="notifyHelpClose">×</button>
+    </div>
+    <div class="notify-help-body">
+      <p class="notify-help-intro" data-i18n="notifyHelpIntro"></p>
+      <section class="notify-help-section recommended">
+        <h3 data-i18n="notifyHelpTelegramTitle"></h3>
+        <ol id="notifyHelpTelegramSteps"></ol>
+        <div class="notify-help-note" data-i18n="notifyHelpTelegramNote"></div>
+      </section>
+      <section class="notify-help-section">
+        <h3 data-i18n="notifyHelpKakaoTitle"></h3>
+        <ol id="notifyHelpKakaoSteps"></ol>
+        <div class="notify-help-redirect">
+          <b data-i18n="notifyHelpRedirectLabel"></b>
+          <code id="notifyHelpRedirectUri"></code>
+          <p data-i18n="notifyHelpRedirectHint"></p>
+        </div>
+        <div class="notify-help-note" data-i18n="notifyHelpKakaoNote"></div>
+      </section>
+      <section class="notify-help-section">
+        <h3 data-i18n="notifyHelpAgentsTitle"></h3>
+        <ol id="notifyHelpAgentSteps"></ol>
+      </section>
+      <section class="notify-help-section notify-help-troubleshoot">
+        <h3 data-i18n="notifyHelpTroubleTitle"></h3>
+        <p data-i18n="notifyHelpTroubleBody"></p>
+        <b data-i18n="notifyHelpPrivacyTitle"></b>
+        <p data-i18n="notifyHelpPrivacyBody"></p>
+      </section>
+      <section class="notify-help-links">
+        <b data-i18n="notifyHelpLinksTitle"></b>
+        <div class="row">
+          <button type="button" class="chip ghost" data-guide-url="https://t.me/BotFather">BotFather</button>
+          <button type="button" class="chip ghost" data-guide-url="https://developers.kakao.com/docs/ko/kakaologin/prerequisite">Kakao Login</button>
+          <button type="button" class="chip ghost" data-guide-url="https://developers.kakao.com/docs/ko/kakaotalk-message/rest-api">KakaoTalk Message</button>
+          <button type="button" class="chip ghost" data-guide-url="https://code.claude.com/docs/en/hooks">Claude Code</button>
+          <button type="button" class="chip ghost" data-guide-url="https://developers.openai.com/codex/hooks">Codex Hooks</button>
+        </div>
+      </section>
+    </div>
+    <div class="notify-help-footer"><button type="button" class="chip" id="btnNotifyHelpDone" data-i18n="notifyHelpClose"></button></div>
+  </dialog>
 
   <!-- 오늘의 상태 -->
   <div class="sechead">

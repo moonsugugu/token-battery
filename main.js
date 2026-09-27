@@ -906,7 +906,9 @@ ipcMain.handle('claude:login', () => openClaudeLogin());
 ipcMain.handle('open:url', (_e, url) => {
   const ok = /^https:\/\/(www\.)?(youtube\.com|claude\.ai|chatgpt\.com)\//.test(url)
     || /^https:\/\/(www\.)?moonsunezip\.com(\/|$)/.test(url)
-    || url === 'https://www.instagram.com/moonsune.zip/';
+    || url === 'https://www.instagram.com/moonsune.zip/'
+    || url === 'https://t.me/BotFather'
+    || /^https:\/\/(core\.telegram\.org|developers\.kakao\.com|code\.claude\.com|developers\.openai\.com)\//.test(url);
   if (ok) shell.openExternal(url);
 });
 ipcMain.handle('tray:labels', (_e, labels) => { trayLabels = { ...trayLabels, ...labels }; buildTrayMenu(); });
