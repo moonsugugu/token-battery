@@ -6,13 +6,48 @@
   "main": "main.js",
   "private": true,
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
   },
   "devDependencies": {
-    "electron": "^44.4.5"
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
   },
   "allowScripts": {
     "electron@44.4.5": true
   },
-  "author": "문수네집 (moonsune.zip)"
+  "author": "문수네집 (moonsune.zip)",
+  "build": {
+    "appId": "com.moonsune.tokenbattery",
+    "productName": "TokenBattery",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist{,/**}",
+      "!output{,/**}"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TokenBattery",
+      "runAfterFinish": true
+    }
+  }
 }
