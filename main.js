@@ -22,6 +22,9 @@ const CODEX_HOOK_MARKER_END = '# <<< AI CREW task notifications';
 const execFileAsync = promisify(execFile);
 const ICON = path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png');
 const TRAY_ICON = path.join(__dirname, 'assets', 'tray.png'); // tray@2x.png는 고해상도 화면에서 자동 사용
+// 앱 ID는 package.json의 build.appId와 같아야 한다. 설치 파일이 바로가기에 이 ID를 넣으므로,
+// 다르면 설치판에서 윈도우 알림·작업 표시줄이 바로가기와 따로 논다. 자동 실행 등록 이름으로도 쓰인다
+const APP_ID = 'com.moonsune.tokenbattery';
 
 let win = null;
 let tray = null;
@@ -62,17 +65,15 @@ const DEFAULT_STORE = {
   compactMode: 'mini',
   hotkeys: { toggle: 'F3', full: 'F4' },
   scale: { mini: 1, char: 1, full: 1 },
+  autostartDefaulted: false, // 설치판에서 '윈도우 시작 시 자동 실행' 기본값(켜짐)을 이미 적용했는지
 };
 
-// 설정 파일이 아예 없으면(처음 설치하고 처음 켠 경우) true를 돌려준다. 파일이 깨진 경우는 첫 실행으로 보지 않는다
 async function loadStore() {
   try {
     const saved = JSON.parse(await fs.readFile(storePath(), 'utf8'));
     store = { ...DEFAULT_STORE, ...saved, notifications: { ...DEFAULT_STORE.notifications, ...(saved.notifications || {}) } };
-    return false;
-  } catch (error) {
+  } catch {
     store = { ...DEFAULT_STORE };
-    return error.code === 'ENOENT';
   }
 }
 let saveTimer = null;
@@ -984,16 +985,43 @@ app.on('will-quit', () => {
 // 윈도우 시작 시 자동 실행: 켤 때와 상태를 읽을 때 같은 실행 파일·인자를 넘겨야 한다.
 // 인자 없이 읽으면 등록값("실행파일 앱경로")과 비교가 어긋나서, 켜져 있어도 설정 화면에 꺼짐으로 보인다
 const autostartItem = () => ({ path: process.execPath, args: [path.resolve(__dirname)] });
+const getAutostart = () => app.getLoginItemSettings(autostartItem()).openAtLogin;
 const setAutostart = (on) => app.setLoginItemSettings({ ...autostartItem(), openAtLogin: !!on });
 ipcMain.handle('app:autostart', (_e, on) => {
-  if (on === undefined) return app.getLoginItemSettings(autostartItem()).openAtLogin;
+  if (on === undefined) return getAutostart();
   setAutostart(on);
   return !!on;
 });
 
+// 자동 실행 등록 이름은 앱 ID를 따른다. 예전 앱 ID(AI 크루, 1.0.0)로 남은 등록은 지우고, 켜져 있었으면 새 이름으로 옮긴다.
+// 그대로 두면 부팅 때 두 번 켜지고, 설정 화면은 새 이름 항목만 읽어서 켜짐 상태를 알아보지 못한다.
+// getLoginItemSettings는 name 옵션을 무시하므로 예전 이름은 launchItems(이 실행 파일로 등록된 항목)에서 찾는다
+const OLD_AUTOSTART_NAMES = ['com.moonsunezip.ai-usage-widget', 'com.moonsunezip.tokenbattery'];
+function migrateAutostartName() {
+  const { launchItems = [] } = app.getLoginItemSettings(autostartItem());
+  const old = launchItems.filter((item) => OLD_AUTOSTART_NAMES.includes(item.name));
+  for (const name of OLD_AUTOSTART_NAMES) app.setLoginItemSettings({ name, openAtLogin: false }); // 없으면 아무 일도 없다
+  if (!old.length) return;
+  if (!launchItems.some((item) => item.name === APP_ID)) {
+    // 작업 관리자에서 꺼 둔 상태(enabled)까지 그대로 옮긴다
+    app.setLoginItemSettings({ ...autostartItem(), openAtLogin: true, enabled: old.some((item) => item.enabled) });
+  }
+  log('moved autostart entry to new app id', old.map((item) => item.name));
+}
+
+// 설치판을 처음 켰을 때(1.0.0에서 업데이트한 경우 포함) 한 번만 자동 실행을 켜 둔다. 그 뒤로는 사용자가 고른 값을 그대로 둔다.
+// 소스에서 바로 실행하는 개발판(electron .)은 개발 폴더가 부팅 때마다 켜지지 않도록 건드리지 않는다
+function applyAutostartDefault() {
+  if (!app.isPackaged || store.autostartDefaulted) return;
+  if (!getAutostart()) setAutostart(true); // 이미 등록돼 있으면(작업 관리자에서 꺼 둔 경우 포함) 그대로 둔다
+  store.autostartDefaulted = true;
+  saveStore();
+  log('autostart default applied');
+}
+
 // ---------- 시작 ----------
 app.setName('TokenBattery');
-app.setAppUserModelId('com.moonsunezip.tokenbattery');
+app.setAppUserModelId(APP_ID);
 // 개발 확인용 스냅샷 모드는 실제 설정을 건드리지 않도록 별도 폴더 사용
 if (process.env.WIDGET_SNAPSHOT) app.setPath('userData', path.join(os.tmpdir(), 'token-battery-snapshot'));
 else app.setPath('userData', path.join(app.getPath('appData'), 'ai-usage-widget')); // 이름 변경 후에도 기존 설정·로그인을 유지
@@ -1034,24 +1062,14 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
   app.whenReady().then(async () => {
-    const firstRun = await loadStore();
-    log('start', { dir: __dirname, noSandbox, firstRun });
-    // 이름 변경 전(AI 크루) 자동 실행 등록이 남아 있으면 부팅 때 두 번 켜지므로 지운다
-    try {
-      const legacy = { name: 'com.moonsunezip.ai-usage-widget', path: process.execPath, args: [path.resolve(__dirname)] };
-      if (app.getLoginItemSettings(legacy).openAtLogin) {
-        app.setLoginItemSettings({ ...legacy, openAtLogin: false });
-        log('removed legacy autostart entry');
-      }
-    } catch (error) { log('legacy autostart cleanup failed', error.message); }
-    // 처음 설치하고 처음 켰을 때는 '윈도우 시작 시 자동 실행'을 켜 둔다. 그 뒤로는 사용자가 고른 값을 그대로 둔다
-    // (스냅샷 모드는 매번 임시 설정 폴더라 첫 실행처럼 보이므로 실제 자동 실행 등록을 건드리지 않는다)
-    if (firstRun && !process.env.WIDGET_SNAPSHOT) {
+    await loadStore();
+    log('start', { dir: __dirname, noSandbox, packaged: app.isPackaged });
+    // 스냅샷 모드는 매번 임시 설정 폴더를 쓰는 개발 확인용이라 실제 자동 실행 등록을 건드리지 않는다
+    if (!process.env.WIDGET_SNAPSHOT) {
       try {
-        setAutostart(true);
-        log('autostart enabled on first run');
-      } catch (error) { log('default autostart failed', error.message); }
-      saveStore(); // 설정 파일을 바로 만들어 둔다. 그래야 자동 실행을 끄고 앱을 다시 실행했을 때 또 첫 실행으로 보고 켜지 않는다
+        migrateAutostartName();
+        applyAutostartDefault();
+      } catch (error) { log('autostart setup failed', error.message); }
     }
     createWindow();
     createTray();
