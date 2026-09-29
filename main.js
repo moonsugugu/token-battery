@@ -64,12 +64,15 @@ const DEFAULT_STORE = {
   scale: { mini: 1, char: 1, full: 1 },
 };
 
+// 설정 파일이 아예 없으면(처음 설치하고 처음 켠 경우) true를 돌려준다. 파일이 깨진 경우는 첫 실행으로 보지 않는다
 async function loadStore() {
   try {
     const saved = JSON.parse(await fs.readFile(storePath(), 'utf8'));
     store = { ...DEFAULT_STORE, ...saved, notifications: { ...DEFAULT_STORE.notifications, ...(saved.notifications || {}) } };
-  } catch {
+    return false;
+  } catch (error) {
     store = { ...DEFAULT_STORE };
+    return error.code === 'ENOENT';
   }
 }
 let saveTimer = null;
@@ -978,9 +981,13 @@ app.on('will-quit', () => {
   if (bridgeServer) bridgeServer.close();
 });
 
+// 윈도우 시작 시 자동 실행: 켤 때와 상태를 읽을 때 같은 실행 파일·인자를 넘겨야 한다.
+// 인자 없이 읽으면 등록값("실행파일 앱경로")과 비교가 어긋나서, 켜져 있어도 설정 화면에 꺼짐으로 보인다
+const autostartItem = () => ({ path: process.execPath, args: [path.resolve(__dirname)] });
+const setAutostart = (on) => app.setLoginItemSettings({ ...autostartItem(), openAtLogin: !!on });
 ipcMain.handle('app:autostart', (_e, on) => {
-  if (on === undefined) return app.getLoginItemSettings().openAtLogin;
-  app.setLoginItemSettings({ openAtLogin: !!on, path: process.execPath, args: [path.resolve(__dirname)] });
+  if (on === undefined) return app.getLoginItemSettings(autostartItem()).openAtLogin;
+  setAutostart(on);
   return !!on;
 });
 
@@ -1027,8 +1034,8 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
   app.whenReady().then(async () => {
-    await loadStore();
-    log('start', { dir: __dirname, noSandbox });
+    const firstRun = await loadStore();
+    log('start', { dir: __dirname, noSandbox, firstRun });
     // 이름 변경 전(AI 크루) 자동 실행 등록이 남아 있으면 부팅 때 두 번 켜지므로 지운다
     try {
       const legacy = { name: 'com.moonsunezip.ai-usage-widget', path: process.execPath, args: [path.resolve(__dirname)] };
@@ -1037,6 +1044,15 @@ if (!app.requestSingleInstanceLock()) {
         log('removed legacy autostart entry');
       }
     } catch (error) { log('legacy autostart cleanup failed', error.message); }
+    // 처음 설치하고 처음 켰을 때는 '윈도우 시작 시 자동 실행'을 켜 둔다. 그 뒤로는 사용자가 고른 값을 그대로 둔다
+    // (스냅샷 모드는 매번 임시 설정 폴더라 첫 실행처럼 보이므로 실제 자동 실행 등록을 건드리지 않는다)
+    if (firstRun && !process.env.WIDGET_SNAPSHOT) {
+      try {
+        setAutostart(true);
+        log('autostart enabled on first run');
+      } catch (error) { log('default autostart failed', error.message); }
+      saveStore(); // 설정 파일을 바로 만들어 둔다. 그래야 자동 실행을 끄고 앱을 다시 실행했을 때 또 첫 실행으로 보고 켜지 않는다
+    }
     createWindow();
     createTray();
     registerHotkeys();
