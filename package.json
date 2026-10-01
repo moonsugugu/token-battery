@@ -1,7 +1,7 @@
 {
   "name": "token-battery",
   "productName": "TokenBattery",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TokenBattery (토큰배터리) — Claude·Codex 사용 한도를 배터리처럼 보여주는 캐릭터 위젯. 구독 결제일과 코딩 BGM도 한곳에서 · made by 문수네집",
   "main": "main.js",
   "private": true,
@@ -27,7 +27,8 @@
     "files": [
       "**/*",
       "!dist{,/**}",
-      "!output{,/**}"
+      "!output{,/**}",
+      "!build{,/**}"
     ],
     "win": {
       "target": [
@@ -44,10 +45,11 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
+      "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "TokenBattery",
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "include": "build/installer.nsh"
     }
   }
 }
