@@ -497,6 +497,7 @@ const CHAR_WORLD = {
 // ---------- TokenBattery 전체 모드 문구 ----------
 const I18N_CREW = {
   ko: {
+    weeklyLeft: '{duration} 남음', weeklyClock: '{days} 남음 · {time} 리셋',
     sync: '동기화', bgmPlay: 'BGM 재생 (유튜브)', basisLbl: '한도 표시', basisRemain: '남은 한도', basisUsed: '사용량',
     timeBasisLbl: '시간 표시', timeBasisClock: '리셋 시각', timeBasisRemaining: '남은 시간', resetAt: '리셋 시각',
     today: '오늘의 상태', nextRecover: '다음 회복', subsTitle: '구독 관리', subsSub: '플랜 확인 및 관리하기', subsNext: '다음 결제 {s} {d}',
@@ -505,6 +506,7 @@ const I18N_CREW = {
     hkToggle: '모드 전환 (미니→캐릭터→전체→끄기)', hkPrintable: '"{k}" 키를 단독으로 쓰면 다른 프로그램에서 그 글자를 칠 수 없어요. F키나 Ctrl/Alt 조합을 쓰세요.',
   },
   en: {
+    weeklyLeft: '{duration} left', weeklyClock: '{days} left · resets at {time}',
     sync: 'Synced', bgmPlay: 'Play BGM (YouTube)', basisLbl: 'Limit display', basisRemain: 'Remaining', basisUsed: 'Used',
     today: "Today's status", nextRecover: 'Next recovery', subsTitle: 'Subscriptions', subsSub: 'Check and manage plans', subsNext: 'Next bill {s} {d}',
     newTask: 'New task', remainLbl: 'Remaining', usedLbl: 'Used', resetIn: 'Resets in', resetAt: 'Reset time', weekShort: 'Week',
@@ -513,6 +515,7 @@ const I18N_CREW = {
     hkToggle: 'Cycle modes (mini→character→full→off)', hkPrintable: 'Using "{k}" alone blocks typing it in every app. Use an F-key or a Ctrl/Alt combo.',
   },
   ja: {
+    weeklyLeft: '残り {duration}', weeklyClock: '残り {days} · {time} リセット',
     sync: '同期', bgmPlay: 'BGM 再生 (YouTube)', basisLbl: '利用量表示', basisRemain: '残り', basisUsed: '使用量',
     today: '今日の状態', nextRecover: '次の回復', subsTitle: 'サブスク管理', subsSub: 'プランの確認と管理', subsNext: '次回支払い {s} {d}',
     newTask: '新しい作業', remainLbl: '残り枠', usedLbl: '使用量', resetIn: 'リセットまで', resetAt: 'リセット時刻', weekShort: '週間',
@@ -521,6 +524,7 @@ const I18N_CREW = {
     hkToggle: 'モード切替 (ミニ→キャラ→全体→オフ)', hkPrintable: '「{k}」を単独で使うと他のアプリでその文字が打てません。Fキーか Ctrl/Alt との組み合わせを使ってください。',
   },
   zh: {
+    weeklyLeft: '剩余 {duration}', weeklyClock: '剩余 {days} · {time} 重置',
     sync: '同步', bgmPlay: '播放 BGM (YouTube)', basisLbl: '额度显示', basisRemain: '剩余', basisUsed: '已用',
     today: '今日状态', nextRecover: '下次恢复', subsTitle: '订阅管理', subsSub: '查看并管理套餐', subsNext: '下次扣款 {s} {d}',
     newTask: '开始新任务', remainLbl: '剩余额度', usedLbl: '已用', resetIn: '重置还需', resetAt: '重置时间', weekShort: '每周',
@@ -529,6 +533,7 @@ const I18N_CREW = {
     hkToggle: '切换模式 (迷你→角色→完整→关闭)', hkPrintable: '单独使用“{k}”会导致其他程序无法输入该字符。请使用 F 键或 Ctrl/Alt 组合。',
   },
   es: {
+    weeklyLeft: 'Quedan {duration}', weeklyClock: 'Quedan {days} · reinicio a las {time}',
     sync: 'Sincr.', bgmPlay: 'Reproducir BGM (YouTube)', basisLbl: 'Límite', basisRemain: 'Restante', basisUsed: 'Usado',
     today: 'Estado de hoy', nextRecover: 'Próxima recuperación', subsTitle: 'Suscripciones', subsSub: 'Revisa y gestiona planes', subsNext: 'Próximo cobro {s} {d}',
     newTask: 'Nueva tarea', remainLbl: 'Restante', usedLbl: 'Usado', resetIn: 'Reinicio en', resetAt: 'Hora de reinicio', weekShort: 'Sem',

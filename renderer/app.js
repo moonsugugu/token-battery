@@ -55,14 +55,25 @@ function resetDisplay(ts, { date = false, expired = '–' } = {}) {
   if (ts <= Date.now()) return expired;
   return useResetClock() ? (date ? fmtClock(ts) : fmtClockTime(ts)) : fmtShort(ts - Date.now());
 }
-// 시간 표시 설정은 5시간 창에만 적용한다. 주간 창은 항상 남은 기간으로 보여준다.
-function weeklyResetDisplay(ts) {
-  if (!ts) return '–';
+// 초소형은 날짜만, 캐릭터·전체는 시간 표시 설정에 맞춰 주간 리셋을 자세히 보여준다.
+function fmtWeeklyDuration(ms) {
+  // 아직 리셋 전이면 0분으로 보이지 않도록 분 단위로 올림한다.
+  const minutes = Math.max(1, Math.ceil(ms / 60000));
+  const days = Math.floor(minutes / 1440);
+  const hours = String(Math.floor((minutes % 1440) / 60)).padStart(2, '0');
+  const mins = String(minutes % 60).padStart(2, '0');
+  const time = t('hm', { h: hours, m: mins });
+  return days > 0 ? `${t('dayS', { d: days })} ${time}` : time;
+}
+function weeklyResetDisplay(ts, { compact = false } = {}) {
+  if (!Number.isFinite(ts) || ts <= 0) return '–';
   const left = ts - Date.now();
   if (left <= 0) return t('resetDone');
-  if (left < 60000) return t('min', { n: 1 });
-  const days = Math.ceil(left / 86400000);
-  return days > 0 ? t('dayS', { d: days }) : fmtDur(left);
+  if (compact) return left < 60000 ? t('min', { n: 1 }) : t('dayS', { d: Math.ceil(left / 86400000) });
+  const duration = fmtWeeklyDuration(left);
+  if (!useResetClock()) return t('weeklyLeft', { duration });
+  const days = left >= 86400000 ? t('dayS', { d: Math.ceil(left / 86400000) }) : duration;
+  return t('weeklyClock', { days, time: fmtClockTime(ts) });
 }
 const expiredW = (w) => w && w.resetsAt && w.resetsAt < Date.now();
 const remainOf = (w) => (w ? (expiredW(w) ? 100 : 100 - clampPct(w)) : null);
@@ -107,6 +118,7 @@ function crewCard(s) {
   const c5 = (v5 != null && dangerColor(v5)) || accent;
   const cw = (vw != null && dangerColor(vw)) || accent;
   const reset5 = d && d.fiveHour ? resetDisplay(d.fiveHour.resetsAt) : '–';
+  const resetWeek = d && d.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–';
   const [bIcon, bCls] = BADGE[st];
   return `
     <div class="crewcard ${s} st-${st}" ${!d && s === 'claude' ? 'data-act="login"' : ''}>
@@ -125,6 +137,7 @@ function crewCard(s) {
         </div>
       </div>
       <div class="segs" title="${esc(t('wk'))} ${vw ?? '–'}%"><span>${t('weekShort')}</span><div class="segbar">${segsHTML(vw, cw)}</div><b>${vw ?? '–'}%</b></div>
+      <div class="weekly-reset" title="${esc(d?.weekly?.resetsAt ? fmtClock(d.weekly.resetsAt) : '')}">↻ ${t('weekShort')} ${resetWeek}</div>
     </div>`;
 }
 function renderUsage() {
@@ -149,7 +162,7 @@ function renderUsage() {
     const d = svcData(x);
     const l5 = d && d.fiveHour ? resetDisplay(d.fiveHour.resetsAt) : '–';
     const lw = d && d.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–';
-    return `<span class="rc"><i class="rdot ${x}"></i>${SVC[x]} <b>${l5}</b><small>${t('weekShort')} ${lw}</small></span>`;
+    return `<span class="rc"><i class="rdot ${x}"></i><span>${SVC[x]}</span><b>${l5}</b><small title="${esc(d?.weekly?.resetsAt ? fmtClock(d.weekly.resetsAt) : '')}">${t('weekShort')} ${lw}</small></span>`;
   }).join('<span class="rsep"></span>');
 
   $('syncTime').textContent = new Date(usage.now || Date.now()).toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -163,7 +176,7 @@ function renderUsage() {
 function miniCell(w, weekly = false) {
   if (!w) return '<b style="color:var(--muted)">–</b><em></em>';
   const v = shown(w);
-  const reset = weekly ? weeklyResetDisplay(w.resetsAt) : resetDisplay(w.resetsAt);
+  const reset = weekly ? weeklyResetDisplay(w.resetsAt, { compact: true }) : resetDisplay(w.resetsAt);
   return `<b style="color:${dangerColor(v) || 'var(--text)'}">${v}%</b><em>${reset === t('resetDone') ? '–' : reset}</em>`;
 }
 function renderMini() {
@@ -218,7 +231,7 @@ function renderChar() {
         ${meter(world[0], r5, 'h5')}
         ${meter(world[1], rw, 'wk')}
         <div class="areset">${reset}</div>
-        <div class="areset wkreset">${wReset}</div>
+        <div class="areset wkreset" title="${esc(d?.weekly?.resetsAt ? fmtClock(d.weekly.resetsAt) : '')}">${wReset}</div>
       </div>`);
   }
   $('scene').innerHTML = html.length ? html.join('') : `<div class="mneed">${t('turnOn')}</div>`;

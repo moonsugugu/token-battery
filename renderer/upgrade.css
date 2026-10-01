@@ -451,6 +451,33 @@
 .theme-editorial .rowcard { border-radius: 5px; box-shadow: none; }
 
 /* Compact modes use the same cast and keep their existing small footprint. */
+.actor .areset.wkreset {
+  width: 100%;
+  white-space: normal;
+  word-break: keep-all;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.card.full .weekly-reset {
+  padding: 0 10px 10px;
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.45;
+  word-break: keep-all;
+  font-variant-numeric: tabular-nums;
+}
+.card.full .rbody { align-items: flex-start; gap: 8px; }
+.card.full .rc {
+  display: grid;
+  grid-template-columns: 11px auto minmax(0, 1fr);
+  flex: 1;
+  min-width: 0;
+}
+.card.full .rc small {
+  grid-column: 2 / -1;
+  line-height: 1.45;
+  word-break: keep-all;
+}
 .theme-crt .card.full .crew-note { text-shadow: none; }
 .theme-industrial .card.full .cta { color: #171819; }
 .theme-editorial .card.full .stbadge { border-color: #faf6ec; }
