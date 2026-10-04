@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
 const Companions = require('./renderer/companions');
+const { TokenUsage } = require('./token-usage');
 
 const HOME = os.homedir();
 const CODEX_HOME = process.env.CODEX_HOME ? path.resolve(process.env.CODEX_HOME) : path.join(HOME, '.codex');
@@ -31,6 +32,9 @@ let win = null;
 let tray = null;
 let claudeFetchWin = null; // claude.ai 세션으로 사용량을 조회하는 숨김 창
 let store = null;
+let tokenTracker = null;
+let tokenTimer = null;
+let tokenSince = { claude: Date.now(), codex: Date.now() };
 let bridgeServer = null;
 let bridgeStarting = null;
 let bridgeToken = null;
@@ -63,7 +67,8 @@ const DEFAULT_STORE = {
   taskWarnOn: true,
   notifications: { enabled: false, provider: 'telegram', minDurationMinutes: 10, suppressWhenForeground: true, hooksInstalled: false },
   history: { claude: {}, codex: {} },
-  companions: { friends: {}, meters: {} },
+  companions: { friends: {}, targets: {} },
+  tokenLedger: { seen: {}, totals: { claude: 0, codex: 0 }, lastSeen: {} },
   compactMode: 'mini',
   hotkeys: { toggle: 'F3', full: 'F4' },
   scale: { mini: 1, char: 1, full: 1 },
@@ -77,8 +82,8 @@ async function loadStore() {
   } catch {
     store = { ...DEFAULT_STORE };
   }
-  store.companions ||= { friends: {}, meters: {} };
-  Companions.pause(store.companions);
+  store.companions = Companions.migrate(store.companions || { friends: {}, targets: {} });
+  store.tokenLedger ||= { seen: {}, totals: { claude: 0, codex: 0 }, lastSeen: {} };
 }
 let saveTimer = null;
 let storeWrites = Promise.resolve();
@@ -881,6 +886,17 @@ function createTray() {
 // ---------- IPC ----------
 let fakeUsage = null; // 개발용 캡처(WIDGET_SNAPSHOT_STEPS)에서만 사용
 let usageRequest = null;
+let tokenRequest = null;
+function refreshTokens() {
+  if (!tokenTracker || tokenRequest) return tokenRequest;
+  tokenRequest = (async () => {
+    const events = await tokenTracker.poll();
+    const unlocks = Companions.earn(store.companions, events, { theme: store.theme, claude: store.showClaude, codex: store.showCodex, since: tokenSince });
+    if (events.length) saveStore();
+    if (win && !win.isDestroyed()) win.webContents.send('companions:update', { companions: store.companions, tokens: tokenTracker.status(), unlocks });
+  })().finally(() => { tokenRequest = null; });
+  return tokenRequest;
+}
 async function readUsage() {
   if (fakeUsage) return { ...fakeUsage, now: Date.now() };
   if (process.env.WIDGET_SNAPSHOT) return { claude: { ok: false }, codex: { ok: false }, now: Date.now() };
@@ -892,11 +908,7 @@ async function readUsage() {
     }),
   ]);
   const now = Date.now();
-  const unlocks = Companions.observe(store.companions, { claude, codex }, {
-    theme: store.theme, claude: store.showClaude, codex: store.showCodex,
-  }, now);
-  saveStore();
-  return { claude, codex, now, companions: store.companions, unlocks };
+  return { claude, codex, now, companions: store.companions, tokens: tokenTracker?.status() };
 }
 ipcMain.handle('usage:get', () => {
   if (!usageRequest) usageRequest = readUsage().finally(() => { usageRequest = null; });
@@ -904,12 +916,22 @@ ipcMain.handle('usage:get', () => {
 });
 ipcMain.handle('store:get', () => store);
 ipcMain.handle('store:set', (_e, patch) => {
-  const { companions: _ignored, ...settings } = patch;
-  if (['theme', 'showClaude', 'showCodex'].some((key) => key in settings && settings[key] !== store[key])) Companions.pause(store.companions);
+  const { companions: _ignored, tokenLedger: _private, ...settings } = patch;
+  const now = Date.now();
+  if ('theme' in settings && settings.theme !== store.theme) tokenSince = { claude: now, codex: now };
+  for (const service of ['claude', 'codex']) {
+    const key = service === 'claude' ? 'showClaude' : 'showCodex';
+    if (key in settings && settings[key] !== store[key]) tokenSince[service] = now;
+  }
   store = { ...store, ...settings }; saveStore(); return store;
 });
 ipcMain.handle('companions:select', (_e, { theme, service, selected }) => {
   if (!Companions.select(store.companions, theme, service, selected)) throw new Error('This design is locked.');
+  saveStore();
+  return store.companions;
+});
+ipcMain.handle('companions:target', (_e, { service, tokens }) => {
+  if (!Companions.setTarget(store.companions, service, tokens)) throw new Error('Invalid token target.');
   saveStore();
   return store.companions;
 });
@@ -1100,11 +1122,19 @@ if (!app.requestSingleInstanceLock()) {
     if (quitting || !store) return;
     event.preventDefault();
     quitting = true;
-    flushStore().finally(() => app.quit());
+    clearInterval(tokenTimer);
+    tokenTracker?.close();
+    Promise.resolve(tokenRequest).catch((error) => log('token log read failed', error.message)).then(flushStore).finally(() => app.quit());
   });
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
   app.whenReady().then(async () => {
     await loadStore();
+    if (!process.env.WIDGET_SNAPSHOT) {
+      tokenSince = { claude: Date.now(), codex: Date.now() };
+      tokenTracker = new TokenUsage({ codex: CODEX_SESSIONS, claude: path.join(process.env.CLAUDE_CONFIG_DIR || path.join(HOME, '.claude'), 'projects') }, store.tokenLedger);
+      await tokenTracker.start();
+      tokenTimer = setInterval(() => refreshTokens().catch((error) => log('token log read failed', error.message)), 15000);
+    }
     log('start', { dir: __dirname, noSandbox, packaged: app.isPackaged });
     // 스냅샷 모드는 매번 임시 설정 폴더를 쓰는 개발 확인용이라 실제 자동 실행 등록을 건드리지 않는다
     if (!process.env.WIDGET_SNAPSHOT) {

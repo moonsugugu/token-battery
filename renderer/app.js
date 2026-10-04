@@ -3,6 +3,7 @@ const W = window.widget;
 
 let store = null;
 let usage = null;
+let tokenStatus = null;
 
 // ---------- 유틸 ----------
 function fmtDur(ms) {
@@ -50,24 +51,27 @@ const svcData = (s) => (usage && usage[s] && usage[s].ok ? usage[s] : null);
 // ---------- 친구 관계와 해금한 모습 ----------
 const bondView = (s) => Companions.view(store.companions, store.theme || 'cyber', s);
 const bondName = (rank) => t('bond_' + Companions.stages[rank].id);
+const fmtTokens = (n) => new Intl.NumberFormat(LANG, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 function bondStatus(s) {
   const friend = bondView(s);
   const stage = Companions.stages[friend.unlocked];
-  const hint = friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: Math.ceil(friend.next.points - friend.points) }) : t('bondComplete');
+  const hint = friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: fmtTokens(Math.max(0, friend.next.tokens - friend.tokens)) }) : t('bondComplete');
   return `<div class="bond-status" title="${esc(hint)}"><span>${stage.icon} ${esc(bondName(friend.unlocked))}</span><div class="bond-track" role="progressbar" aria-label="${esc(hint)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.floor(friend.progress)}"><i style="width:${friend.progress}%"></i></div></div>`;
 }
 function renderBondCollection() {
   if (!store) return;
   const theme = store.theme || 'cyber';
+  const preview = $('bondPreview').value || 'fresh';
   $('bondCollection').innerHTML = ['claude', 'codex'].map((s) => {
     const friend = bondView(s);
     return `<div class="bond-friend"><div class="bond-heading"><b>${SVC[s]} · ${esc(bondName(friend.unlocked))}</b><label><input type="checkbox" data-bond-active="${s}" ${svcOn(s) ? 'checked' : ''}> ${esc(t('bondActive'))}</label></div>
       ${bondStatus(s)}<div class="bond-designs">${Companions.stages.map((stage, rank) => {
         const locked = rank > friend.unlocked;
         const label = bondName(rank);
-        return `<button type="button" class="bond-design ${rank === friend.selected ? 'selected' : ''}" data-bond-service="${s}" data-bond-rank="${rank}" ${locked ? 'disabled' : ''} aria-label="${esc(label + (locked ? ' · ' + t('bondLocked') : ''))}" aria-pressed="${rank === friend.selected}" title="${esc(locked ? t('bondUnlockAt', { n: Math.ceil(stage.points) }) : label)}"><span class="bond-preview">${drawCharacter(theme, s, 'fresh', null, rank)}</span><span>${locked ? '🔒 ' : ''}${esc(label)}</span></button>`;
-      }).join('')}</div><div class="bond-footer"><span>${friend.points.toFixed(1)} / ${Math.ceil(Companions.stages[4].points)} ${esc(t('bondPoints'))}</span><button type="button" class="chip" data-bond-service="${s}" data-bond-rank="auto" aria-pressed="${store.companions?.friends?.[Companions.key(theme, s)]?.selected == null}">${esc(t('bondAuto'))}</button></div>
-      <p class="note">${esc(!svcOn(s) ? t('bondPaused') : svcData(s)?.manual ? t('bondManual') : !svcData(s) ? t('bondNeedsData') : friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: Math.ceil(friend.next.points - friend.points) }) : t('bondComplete'))}</p></div>`;
+        return `<button type="button" class="bond-design ${rank === friend.selected ? 'selected' : ''}" data-bond-service="${s}" data-bond-rank="${rank}" ${locked ? 'disabled' : ''} aria-label="${esc(label + (locked ? ' · ' + t('bondLocked') : ''))}" aria-pressed="${rank === friend.selected}" title="${esc(locked ? t('bondUnlockAt', { n: fmtTokens(Math.ceil(stage.share * friend.goal)) }) : label)}"><span class="bond-preview">${drawCharacter(theme, s, preview, null, rank)}</span><span>${locked ? '🔒 ' : ''}${esc(label)}</span></button>`;
+      }).join('')}</div><div class="bond-footer"><span title="${friend.tokens.toLocaleString(LANG)} / ${friend.goal.toLocaleString(LANG)}">${fmtTokens(friend.tokens)} / ${fmtTokens(friend.goal)} ${esc(t('bondPoints'))}</span><button type="button" class="chip" data-bond-service="${s}" data-bond-rank="auto" aria-pressed="${store.companions?.friends?.[Companions.key(theme, s)]?.selected == null}">${esc(t('bondAuto'))}</button></div>
+      <label class="bond-target">${esc(t('bondTarget'))}<input type="number" min="1" max="10000" step="1" data-token-target="${s}" value="${friend.goal / 1000000}"> ${esc(t('bondMillion'))}</label>
+      <p class="note">${esc(!svcOn(s) ? t('bondPaused') : tokenStatus?.[s]?.error ? t('bondReadError') : !tokenStatus?.[s]?.available ? t('bondNeedsData') : friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: fmtTokens(Math.max(0, friend.next.tokens - friend.tokens)) }) : t('bondComplete'))}</p></div>`;
   }).join('');
 }
 
@@ -366,6 +370,7 @@ async function refresh() {
   try {
     usage = await W.getUsage();
     if (usage.companions) store.companions = usage.companions;
+    if (usage.tokens) tokenStatus = usage.tokens;
     if (usage.unlocks?.length) {
       $('bondNotice').textContent = usage.unlocks.map((x) => t('bondEvolved', { service: SVC[x.service], stage: bondName(x.to) })).join(' · ');
       $('bondNotice').classList.remove('hidden');
@@ -373,7 +378,7 @@ async function refresh() {
     renderUsage();
     renderMini();
     renderChar();
-    renderBondCollection();
+    if (!document.activeElement?.matches('[data-token-target]')) renderBondCollection();
     checkAlerts();
     recordHistory();
   } finally {
@@ -665,6 +670,7 @@ function applyLang(lang) {
   for (const el of document.querySelectorAll('[data-i18n-ph]')) el.placeholder = t(el.dataset.i18nPh);
   renderNotifyGuide();
   fillSelect($('langSel'), LANGS.map((l) => [l.id, l.name]), LANG);
+  fillSelect($('bondPreview'), [['fresh', '100%'], ['ok', '60%'], ['tired', '20%'], ['dizzy', '5%'], ['sleep', '0%']], $('bondPreview').value || 'fresh');
   fillSelect($('themeSel'), THEMES.map((th, i) => [th.id, `${String(i + 1).padStart(2, '0')} ${THEME_NAMES[LANG][i]}`]), store.theme || 'cyber');
   fillSelect($('bgmMood'), MOOD_QUERIES.map(([id], i) => [id, MOOD_NAMES[LANG][i]]), store.bgmLast || 'lofi');
   W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit') });
@@ -702,10 +708,29 @@ const bindOpt = (id, key) => {
 bindOpt('showClaude', 'showClaude');
 bindOpt('showCodex', 'showCodex');
 $('bondCollection').addEventListener('change', async (event) => {
+  const targetService = event.target.dataset.tokenTarget;
+  if (targetService) {
+    const millions = Number(event.target.value);
+    if (!event.target.checkValidity() || !Number.isInteger(millions)) { event.target.reportValidity(); return; }
+    store.companions = await W.setTokenTarget({ service: targetService, tokens: millions * 1000000 });
+    renderChar(); renderUsage(); renderBondCollection(); return;
+  }
   const service = event.target.dataset.bondActive;
   if (!service) return;
   store = await W.setStore({ [service === 'claude' ? 'showClaude' : 'showCodex']: event.target.checked });
   applyOptions();
+});
+$('bondPreview').onchange = renderBondCollection;
+W.onCompanions((state) => {
+  if (!store) return;
+  store.companions = state.companions;
+  tokenStatus = state.tokens;
+  if (state.unlocks?.length) {
+    $('bondNotice').textContent = state.unlocks.map((x) => t('bondEvolved', { service: SVC[x.service], stage: bondName(x.to) })).join(' · ');
+    $('bondNotice').classList.remove('hidden');
+  }
+  renderUsage(); renderChar();
+  if (!$('settings').classList.contains('hidden') && !document.activeElement?.dataset.tokenTarget) renderBondCollection();
 });
 $('bondCollection').addEventListener('click', async (event) => {
   const button = event.target.closest('[data-bond-rank]');

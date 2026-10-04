@@ -1,26 +1,44 @@
-// Shared by Electron and the renderer. One point = 1% of a weekly quota.
+// Shared relationship rules. Only token metadata from local logs earns progress.
 (function (root) {
   const themes = ['cyber', 'engine', 'mascot', 'arcade', 'glass', 'crt', 'industrial', 'garden', 'anime', 'editorial'];
+  const defaultTarget = 30000000; // Estimate: one million processed tokens/day for 30 days, not a Pro entitlement.
   const stages = [
-    { id: 'acquaintance', points: 0, icon: '○' },
-    { id: 'friend', points: 15, icon: '✿' },
-    { id: 'close', points: 70, icon: '♥' },
-    { id: 'best', points: 200, icon: '★' },
-    { id: 'soulmate', points: 100 * 30 / 7, icon: '✦' },
+    { id: 'acquaintance', share: 0, icon: '○' },
+    { id: 'friend', share: .02, icon: '✿' },
+    { id: 'close', share: .12, icon: '♥' },
+    { id: 'best', share: .4, icon: '★' },
+    { id: 'soulmate', share: 1, icon: '✦' },
   ];
   const key = (theme, service) => `${theme}:${service}`;
   const valid = (theme, service) => themes.includes(theme) && ['claude', 'codex'].includes(service);
-  function level(points = 0) {
-    return stages.reduce((rank, stage, i) => points >= stage.points ? i : rank, 0);
+  const target = (state, service) => Number.isSafeInteger(state?.targets?.[service]) && state.targets[service] >= 1000000 ? state.targets[service] : defaultTarget;
+  function level(tokens = 0, goal = defaultTarget) {
+    return stages.reduce((rank, stage, i) => tokens >= Math.ceil(stage.share * goal) ? i : rank, 0);
+  }
+  function migrate(state) {
+    state.friends ||= {};
+    for (const friend of Object.values(state.friends)) {
+      if (friend.tokens == null) {
+        // Retain earned looks from v1.1.0 without inventing historical token counts.
+        friend.achieved = [0, 15, 70, 200, 100 * 30 / 7].reduce((rank, n, i) => friend.points >= n ? i : rank, 0);
+        friend.tokens = 0;
+        delete friend.points;
+      }
+    }
+    delete state.meters;
+    return state;
   }
   function view(state, theme, service) {
     const friend = state?.friends?.[key(theme, service)] || {};
-    const points = Number.isFinite(friend.points) ? Math.max(0, friend.points) : 0;
-    const unlocked = level(points);
+    const tokens = Number.isSafeInteger(friend.tokens) ? Math.max(0, friend.tokens) : 0;
+    const goal = target(state, service);
+    const achieved = Number.isInteger(friend.achieved) ? Math.min(4, Math.max(0, friend.achieved)) : 0;
+    const unlocked = Math.max(achieved, level(tokens, goal));
     const selected = Number.isInteger(friend.selected) ? Math.max(0, Math.min(unlocked, friend.selected)) : unlocked;
-    const next = stages[unlocked + 1];
-    const progress = next ? Math.min(100, (points - stages[unlocked].points) / (next.points - stages[unlocked].points) * 100) : 100;
-    return { points, unlocked, selected, next, progress };
+    const next = stages[unlocked + 1] && { ...stages[unlocked + 1], tokens: Math.ceil(stages[unlocked + 1].share * goal) };
+    const start = Math.ceil(stages[unlocked].share * goal);
+    const progress = next ? Math.max(0, Math.min(100, (tokens - start) / (next.tokens - start) * 100)) : 100;
+    return { tokens, goal, unlocked, selected, next, progress };
   }
   function select(state, theme, service, selected) {
     if (!valid(theme, service) || (selected !== null && (!Number.isInteger(selected) || selected < 0 || selected > view(state, theme, service).unlocked))) return false;
@@ -29,51 +47,34 @@
     state.friends[id] = { ...state.friends[id], selected };
     return true;
   }
-  // A pause, theme switch or restart establishes a new baseline. Never award offline usage.
-  function pause(state) {
-    for (const meter of Object.values(state.meters || {})) meter.active = null;
+  function setTarget(state, service, tokens) {
+    if (!['claude', 'codex'].includes(service) || !Number.isSafeInteger(tokens) || tokens < 1000000 || tokens > 10000000000) return false;
+    for (const theme of themes) {
+      const friend = state.friends?.[key(theme, service)];
+      if (friend) friend.achieved = view(state, theme, service).unlocked;
+    }
+    state.targets ||= {};
+    state.targets[service] = tokens;
+    return true;
   }
-  function observe(state, usage, options, now = Date.now()) {
+  function earn(state, events, options) {
     state.friends ||= {};
-    state.meters ||= {};
     const unlocked = [];
     for (const service of ['claude', 'codex']) {
-      const data = usage?.[service];
-      if (!data?.ok || data.manual || data.source === 'manual') {
-        if (state.meters[service]) state.meters[service].active = null;
-        continue;
-      }
-      const usable = (w) => w && Number.isFinite(w.percent) && w.percent >= 0 && w.percent <= 100 && Number.isFinite(w.resetsAt) && w.resetsAt > now;
-      const type = usable(data.weekly) ? 'weekly' : usable(data.fiveHour) ? 'fiveHour' : null;
-      if (!type || !Number.isFinite(data.updatedAt) || data.updatedAt > now + 60000) {
-        if (state.meters[service]) state.meters[service].active = null;
-        continue;
-      }
-      const window = data[type];
-      const active = valid(options.theme, service) && options[service] !== false ? key(options.theme, service) : null;
-      const prev = state.meters[service];
-      // Old log events and repeated reads cannot roll the meter back or earn twice.
-      if (prev && data.updatedAt <= prev.updatedAt) continue;
-      const same = prev && prev.type === type && prev.resetsAt === window.resetsAt;
-      const high = same ? Math.max(prev.high, window.percent) : window.percent;
-      let delta = 0;
-      if (active && prev?.active === active && prev.type === type) {
-        if (same) delta = Math.max(0, window.percent - prev.high);
-        else if (prev.resetsAt <= now && window.resetsAt > prev.resetsAt && data.updatedAt >= prev.resetsAt) delta = window.percent;
-      }
-      state.meters[service] = { type, resetsAt: window.resetsAt, high, updatedAt: data.updatedAt, active };
-      if (!delta) continue;
-      // Fallback: a full five-hour window is 5/168 of a weekly window.
-      const points = delta * (type === 'weekly' ? 1 : 5 / 168);
-      const friend = state.friends[active] ||= { points: 0, selected: null };
-      const before = level(friend.points);
-      friend.points = (Number.isFinite(friend.points) ? Math.max(0, friend.points) : 0) + points;
-      const after = level(friend.points);
+      if (!valid(options.theme, service) || options[service] === false) continue;
+      const amount = events.filter((event) => event.service === service && Number.isSafeInteger(event.tokens) && event.tokens > 0 && event.at >= options.since[service]).reduce((sum, event) => sum + event.tokens, 0);
+      if (!amount) continue;
+      const id = key(options.theme, service);
+      const before = view(state, options.theme, service).unlocked;
+      const friend = state.friends[id] ||= { tokens: 0, selected: null };
+      friend.tokens = (Number.isSafeInteger(friend.tokens) ? Math.max(0, friend.tokens) : 0) + amount;
+      const after = view(state, options.theme, service).unlocked;
+      friend.achieved = after;
       if (after > before) unlocked.push({ theme: options.theme, service, from: before, to: after });
     }
     return unlocked;
   }
-  const api = { themes, stages, key, level, view, select, pause, observe };
+  const api = { themes, stages, defaultTarget, key, level, target, view, migrate, select, setTarget, earn };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Companions = api;
 })(globalThis);

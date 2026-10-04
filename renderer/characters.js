@@ -213,46 +213,25 @@ function uniqueIds(svg) {
   return svg.replace(/id="([^"]+)"/g, `id="$1_${n}"`).replace(/url\(#([^)]+)\)/g, `url(#$1_${n})`);
 }
 
-const BOND_PALETTES = {
-  cyber: ['#63f3ff', '#ac83ff'], engine: ['#ffb957', '#ff785b'],
-  mascot: ['#ffd99a', '#ff94ac'], arcade: ['#ffe762', '#6cffe1'],
-  glass: ['#b0e8ff', '#f5beff'], crt: ['#87ff9b', '#dcff98'],
-  industrial: ['#ffd15e', '#e8f3fa'], garden: ['#b9e994', '#ffe3ab'],
-  anime: ['#ebb3ff', '#ffe387'], editorial: ['#e3c388', '#f4e7cf'],
-};
-
-// Five wearable designs for every cast: charm → heart ribbon → star laurels → celestial wings.
-// Native SVG keeps the original animated face and each world's own colors.
-function bondArt(theme, svc, rank = 0) {
+// Five battery columns; four stages per service, or eight rows for a duo.
+function usageSprite(theme, svc, state, rank = 0) {
   rank = Math.max(0, Math.min(4, Math.floor(Number(rank) || 0)));
-  if (!rank) return '';
-  const palette = BOND_PALETTES[theme] || BOND_PALETTES.cyber;
-  const [color, trim] = svc === 'codex' ? [...palette].reverse() : palette;
-  const pixel = theme === 'arcade' || theme === 'crt';
-  const charm = theme === 'garden' ? '<path d="M-6 4 Q-9-8 0-5 Q9-8 6 4 L0 9Z"/>'
-    : theme === 'cyber' || theme === 'engine' || theme === 'industrial' ? '<path d="M0-9 L8-4 V5 L0 9 L-8 5 V-4Z"/><path d="M-3 0 H3 M0-3 V3" stroke="#fff" fill="none"/>'
-    : '<path d="M0-9 L3-3 L9 0 L3 3 L0 9 L-3 3 L-9 0 L-3-3Z"/>';
-  return `<svg class="bond-art bond-art-${rank}" viewBox="0 0 120 124" aria-hidden="true" ${pixel ? 'shape-rendering="crispEdges"' : ''}>
-    ${rank >= 3 ? `<g fill="${color}" opacity=".8"><path d="M17 101 Q-2 75 12 40 Q5 75 26 96 Q9 73 18 57 Q13 80 31 100Z"/><path d="M103 101 Q122 75 108 40 Q115 75 94 96 Q111 73 102 57 Q107 80 89 100Z"/></g>` : ''}
-    ${rank === 4 ? `<g fill="${trim}" opacity=".7"><path d="M24 90 Q0 91 4 61 Q8 75 29 72 Q8 82 24 90Z"/><path d="M96 90 Q120 91 116 61 Q112 75 91 72 Q112 82 96 90Z"/></g><ellipse class="bond-orbit" cx="60" cy="61" rx="55" ry="56" fill="none" stroke="${color}" stroke-width="1.2" stroke-dasharray="2 7" opacity=".7"/><g fill="${trim}"><path d="M43 12 L40 0 L52 6 L60-2 L68 6 L80 0 L77 12Z"/><circle cx="60" cy="6" r="2.5" fill="${color}"/></g>` : ''}
-    ${rank >= 2 ? `<path d="M23 106 Q60 117 97 106 L94 117 Q60 127 26 117Z" fill="${color}" opacity=".94"/><path d="M27 111 Q60 121 93 111" fill="none" stroke="${trim}" stroke-width="1.5"/><path d="M22 110 L10 122 L30 119 M98 110 L110 122 L90 119" fill="${trim}"/>` : ''}
-    <g transform="translate(${rank === 1 ? 98 : 60} ${rank === 1 ? 100 : 112})" fill="${trim}" stroke="${color}" stroke-width="1.2">
-      ${rank === 2 ? '<path d="M0 7 Q-14-1-6-7 Q-2-10 0-5 Q2-10 6-7 Q14-1 0 7Z"/>' : charm}
-    </g>
-    ${rank >= 3 ? `<g class="bond-sparkles" fill="${trim}"><path d="M12 17 L14 23 L20 25 L14 27 L12 33 L10 27 L4 25 L10 23Z"/><path d="M106 34 L108 40 L114 42 L108 44 L106 50 L104 44 L98 42 L104 40Z"/>${rank === 4 ? '<circle cx="24" cy="46" r="2"/><circle cx="94" cy="15" r="2"/><circle cx="105" cy="86" r="2"/>' : ''}</g>` : ''}
-  </svg>`;
+  const safeTheme = CAST[theme] ? theme : 'cyber';
+  const safeSvc = svc === 'codex' ? 'codex' : 'claude';
+  const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
+  const separate = ['engine', 'industrial'].includes(safeTheme);
+  const rows = separate ? 4 : 8;
+  const row = (separate ? 0 : safeSvc === 'codex' ? 4 : 0) + rank - 1;
+  const image = rank ? `crew-evolution/${safeTheme}${separate ? '-' + safeSvc : ''}.png` : `crew-animation/${safeTheme}-${safeSvc}.png`;
+  return `<span class="usage-sprite ${rank ? 'evolution-sprite' : ''} st-${safeState}" style="--sprite-image:url('${image}');--sprite-rows:${rows * 100}%;--sprite-row:${row * 100 / (rows - 1)}%"></span>`;
 }
 
 function drawCharacter(theme, svc, state, _color, rank = 0) {
   const safeTheme = CAST[theme] ? theme : 'cyber';
   const safeSvc = svc === 'codex' ? 'codex' : 'claude';
-  const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
-  return `<span class="artchar artchar-${safeTheme} artchar-${safeSvc} st-${safeState} bond-skin-${rank}" aria-hidden="true"><span class="usage-sprite st-${safeState}" style="--sprite-image:url('crew-animation/${safeTheme}-${safeSvc}.png')"></span>${bondArt(safeTheme, safeSvc, rank)}</span>`;
+  return `<span class="artchar artchar-${safeTheme} artchar-${safeSvc} bond-skin-${rank}" aria-hidden="true">${usageSprite(safeTheme, safeSvc, state, rank)}</span>`;
 }
 
 function drawHeroSprite(theme, svc, state, rank = 0) {
-  const safeTheme = CAST[theme] ? theme : 'cyber';
-  const safeSvc = svc === 'codex' ? 'codex' : 'claude';
-  const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
-  return `<span class="stage-sprite bond-skin-${rank}" aria-hidden="true"><span class="usage-sprite st-${safeState}" style="--sprite-image:url('crew-animation/${safeTheme}-${safeSvc}.png')"></span>${bondArt(safeTheme, safeSvc, rank)}</span>`;
+  return `<span class="stage-sprite bond-skin-${rank}" aria-hidden="true">${usageSprite(theme, svc, state, rank)}</span>`;
 }
