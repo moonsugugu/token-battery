@@ -581,6 +581,8 @@
 }
 
 .card.full .crewcard .portrait .stage-sprite {
+  display: block;
+  position: absolute;
   z-index: 2;
   inset: 0 0 6px;
   left: 50%;
@@ -611,6 +613,44 @@
 @media (prefers-reduced-motion: reduce) {
   .usage-sprite { animation: none !important; background-position-y: 0%; }
 }
+
+/* Friendship skins layer over the existing animated cast. */
+.bond-art { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.actor .avatar .bond-art { width: 100%; height: 100%; animation: none; }
+.artchar[class*="bond-skin-"] { isolation: isolate; }
+.bond-skin-1 { --bond-glow: #93debd; }
+.bond-skin-2 { --bond-glow: #f4aec5; }
+.bond-skin-3 { --bond-glow: #ffdd81; }
+.bond-skin-4 { --bond-glow: #ddbaff; }
+.artchar:not(.bond-skin-0), .stage-sprite:not(.bond-skin-0) { box-shadow: 0 0 16px color-mix(in srgb, var(--bond-glow) 40%, transparent); border-radius: 12px; }
+.bond-sparkles { animation: bond-shimmer 3s ease-in-out infinite; transform-origin: center; }
+@keyframes bond-shimmer { 50% { opacity: .4; } }
+.bond-status { display: flex; align-items: center; gap: 7px; color: var(--accent); font-size: 10px; line-height: 1.4; }
+.crewcard > .bond-status { padding: 0 12px 6px; }
+.actor > .bond-status { width: 100%; margin: 3px 0; font-size: 9px; }
+.bond-status > span { flex: 0 0 auto; }
+.bond-track { height: 4px; flex: 1; min-width: 12px; border-radius: 6px; background: var(--track); overflow: hidden; }
+.bond-track > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--claude)); border-radius: inherit; }
+.bond-settings { margin: 7px 0; border: 1px solid var(--line); border-radius: 10px; padding: 9px; }
+.bond-settings summary { cursor: pointer; color: var(--accent); font-size: 12px; font-weight: 700; }
+.bond-settings > .note { margin: 7px 0; line-height: 1.6; }
+.bond-friend { margin: 9px 0; padding: 8px; background: var(--input-bg); border: 1px solid var(--line); border-radius: 9px; }
+.bond-heading, .bond-footer { display: flex; justify-content: space-between; align-items: center; gap: 5px; font-size: 10px; margin-bottom: 7px; }
+.bond-heading label { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.bond-designs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin: 9px 0; }
+.bond-design { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; padding: 4px 2px; border-radius: 7px; border: 1px solid var(--line); color: var(--text); background: var(--panel); cursor: pointer; font: inherit; font-size: 8px; line-height: 1.3; }
+.bond-design.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, var(--panel)); }
+.bond-design:disabled { cursor: default; }
+.bond-design:disabled .bond-preview { opacity: .5; filter: grayscale(.75); }
+.bond-design:focus-visible, .bond-footer button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bond-preview { display: block; width: 100%; aspect-ratio: 1; position: relative; }
+.bond-preview .artchar { display: block; position: relative; width: 100%; height: 100%; background-image: var(--crew-art); background-size: 200% 100%; border-radius: 5px; }
+.bond-preview .artchar-codex { background-position: right center; }
+.bond-footer { margin-bottom: 0; color: var(--muted); font-size: 9px; }
+.bond-footer .chip { font-size: 9px; }
+.bond-footer .chip[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.bond-notice { margin: 0 10px 8px; padding: 8px 10px; border: 1px solid var(--accent); border-radius: 9px; color: var(--accent); background: var(--panel); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { .bond-sparkles { animation: none; } }
 
 @media (max-height: 680px) {
   .card.full .crew { --cast-stage-height: 150px; }

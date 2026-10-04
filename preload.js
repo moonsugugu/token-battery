@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('widget', {
   getUsage: () => ipcRenderer.invoke('usage:get'),
   getStore: () => ipcRenderer.invoke('store:get'),
   setStore: (patch) => ipcRenderer.invoke('store:set', patch),
+  selectCompanion: (data) => ipcRenderer.invoke('companions:select', data),
   notificationState: () => ipcRenderer.invoke('notifications:state'),
   setNotificationPreferences: (patch) => ipcRenderer.invoke('notifications:preferences:set', patch),
   saveTelegramCredentials: (data) => ipcRenderer.invoke('notifications:telegram:save', data),

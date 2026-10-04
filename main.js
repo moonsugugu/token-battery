@@ -8,6 +8,7 @@ const http = require('http');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
+const Companions = require('./renderer/companions');
 
 const HOME = os.homedir();
 const CODEX_HOME = process.env.CODEX_HOME ? path.resolve(process.env.CODEX_HOME) : path.join(HOME, '.codex');
@@ -62,6 +63,7 @@ const DEFAULT_STORE = {
   taskWarnOn: true,
   notifications: { enabled: false, provider: 'telegram', minDurationMinutes: 10, suppressWhenForeground: true, hooksInstalled: false },
   history: { claude: {}, codex: {} },
+  companions: { friends: {}, meters: {} },
   compactMode: 'mini',
   hotkeys: { toggle: 'F3', full: 'F4' },
   scale: { mini: 1, char: 1, full: 1 },
@@ -75,13 +77,26 @@ async function loadStore() {
   } catch {
     store = { ...DEFAULT_STORE };
   }
+  store.companions ||= { friends: {}, meters: {} };
+  Companions.pause(store.companions);
 }
 let saveTimer = null;
+let storeWrites = Promise.resolve();
+function flushStore() {
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  const snapshot = JSON.stringify(store, null, 2);
+  // Serialize atomic replacements so polling/settings cannot overwrite a newer achievement.
+  storeWrites = storeWrites.then(async () => {
+    const file = storePath();
+    await fs.writeFile(file + '.tmp', snapshot, 'utf8');
+    await fs.rename(file + '.tmp', file);
+  }).catch((error) => log('store save failed', error.message));
+  return storeWrites;
+}
 function saveStore() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    fs.writeFile(storePath(), JSON.stringify(store, null, 2), 'utf8').catch(() => {});
-  }, 300);
+  saveTimer = setTimeout(flushStore, 300);
 }
 
 // ---------- Codex: 로컬 세션 로그에서 rate_limits 읽기 ----------
@@ -865,8 +880,10 @@ function createTray() {
 
 // ---------- IPC ----------
 let fakeUsage = null; // 개발용 캡처(WIDGET_SNAPSHOT_STEPS)에서만 사용
-ipcMain.handle('usage:get', async () => {
+let usageRequest = null;
+async function readUsage() {
   if (fakeUsage) return { ...fakeUsage, now: Date.now() };
+  if (process.env.WIDGET_SNAPSHOT) return { claude: { ok: false }, codex: { ok: false }, now: Date.now() };
   const [claude, codex] = await Promise.all([
     getClaudeUsage(),
     getCodexUsage().catch(async (error) => {
@@ -874,10 +891,28 @@ ipcMain.handle('usage:get', async () => {
       return { ok: false, loggedIn: await codexLoginDetected(), code: 'codex-read-error' };
     }),
   ]);
-  return { claude, codex, now: Date.now() };
+  const now = Date.now();
+  const unlocks = Companions.observe(store.companions, { claude, codex }, {
+    theme: store.theme, claude: store.showClaude, codex: store.showCodex,
+  }, now);
+  saveStore();
+  return { claude, codex, now, companions: store.companions, unlocks };
+}
+ipcMain.handle('usage:get', () => {
+  if (!usageRequest) usageRequest = readUsage().finally(() => { usageRequest = null; });
+  return usageRequest;
 });
 ipcMain.handle('store:get', () => store);
-ipcMain.handle('store:set', (_e, patch) => { store = { ...store, ...patch }; saveStore(); return store; });
+ipcMain.handle('store:set', (_e, patch) => {
+  const { companions: _ignored, ...settings } = patch;
+  if (['theme', 'showClaude', 'showCodex'].some((key) => key in settings && settings[key] !== store[key])) Companions.pause(store.companions);
+  store = { ...store, ...settings }; saveStore(); return store;
+});
+ipcMain.handle('companions:select', (_e, { theme, service, selected }) => {
+  if (!Companions.select(store.companions, theme, service, selected)) throw new Error('This design is locked.');
+  saveStore();
+  return store.companions;
+});
 ipcMain.handle('notifications:state', () => notificationState());
 ipcMain.handle('notifications:preferences:set', (_e, patch = {}) => {
   const prev = store.notifications || DEFAULT_STORE.notifications;
@@ -1023,7 +1058,7 @@ function applyAutostartDefault() {
 app.setName('TokenBattery');
 app.setAppUserModelId(APP_ID);
 // 개발 확인용 스냅샷 모드는 실제 설정을 건드리지 않도록 별도 폴더 사용
-if (process.env.WIDGET_SNAPSHOT) app.setPath('userData', path.join(os.tmpdir(), 'token-battery-snapshot'));
+if (process.env.WIDGET_SNAPSHOT) app.setPath('userData', process.env.WIDGET_SNAPSHOT_USER_DATA || path.join(os.tmpdir(), 'token-battery-snapshot'));
 else app.setPath('userData', path.join(app.getPath('appData'), 'ai-usage-widget')); // 이름 변경 후에도 기존 설정·로그인을 유지
 if (process.env.WIDGET_SNAPSHOT_SCALE) app.commandLine.appendSwitch('force-device-scale-factor', process.env.WIDGET_SNAPSHOT_SCALE);
 // 일부 PC(보안 프로그램·샌드박스 환경)에서 GPU 샌드박스가 뜨지 않아 앱이 바로 꺼지는 문제 방지
@@ -1060,6 +1095,13 @@ if (!app.requestSingleInstanceLock()) {
   // 이미 켜져 있으면 조용히 끝낸다 (app.exit은 will-quit 등 종료 이벤트를 건너뜀)
   app.exit(0);
 } else {
+  let quitting = false;
+  app.on('before-quit', (event) => {
+    if (quitting || !store) return;
+    event.preventDefault();
+    quitting = true;
+    flushStore().finally(() => app.quit());
+  });
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
   app.whenReady().then(async () => {
     await loadStore();

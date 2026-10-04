@@ -543,3 +543,57 @@ const I18N_CREW = {
   },
 };
 for (const l of Object.keys(I18N_CREW)) Object.assign(I18N[l], I18N_CREW[l]);
+
+const I18N_BOND = {
+  ko: {
+    bondCollection: '♡ 친구 관계 · 디자인 보관함', bondActive: '활성화',
+    bond_acquaintance: '지인', bond_friend: '친구', bond_close: '친밀', bond_best: '단짝', bond_soulmate: '소울메이트',
+    bondHelp: '현재 디자인에서 활성화한 친구와 함께 사용하면 관계도가 쌓여요. 테마마다 친구의 성장은 따로 저장되며, 달성한 모습은 언제든 다시 선택할 수 있어요. 미니 모드와 트레이에서도 앱이 실행 중이면 쌓여요.',
+    bondCalibration: '실제 토큰 개수 대신 자동으로 확인한 한도 사용 증가분을 적립해요. 주간 한도 1% = 1 관계도. 소울메이트는 429 관계도(주간 한도 100% × 약 4.3주), 꾸준히 사용하는 Pro 요금제의 약 한 달을 목표로 잡았어요. 요금제·모델·사용량에 따라 기간이 달라져요. 주간 정보가 없으면 5시간 한도를 주간 비율로 환산해요.',
+    bondNext: '{stage}까지 {n} 관계도', bondComplete: '모든 모습을 해금했어요 ♡', bondPoints: '관계도',
+    bondLocked: '잠김', bondUnlockAt: '{n} 관계도에서 해금', bondAuto: '최신 모습 자동',
+    bondPaused: '비활성화 중 · 관계도는 그대로 보관해요.', bondManual: '직접 입력은 관계도에 반영하지 않아요.',
+    bondNeedsData: '자동 사용량 연결 후 새로운 사용분부터 쌓여요.', bondEvolved: '{service} 친구와 {stage} 달성! 새 모습이 열렸어요.',
+  },
+  en: {
+    bondCollection: '♡ Friendship · design collection', bondActive: 'Active',
+    bond_acquaintance: 'Acquaintance', bond_friend: 'Friend', bond_close: 'Close', bond_best: 'Best friend', bond_soulmate: 'Soulmate',
+    bondHelp: 'Usage grows the active friends in your current theme. Each theme has its own progress. Select any unlocked look again. Growth continues in mini mode and the tray while the app is running.',
+    bondCalibration: 'Growth uses automatic quota increases, not raw token counts. 1% weekly quota = 1 bond point. Soulmate needs 429 points (100% weekly quota × 4.3 weeks), targeting about a month of regular Pro use. Plans, models and usage affect the time. Without weekly data, five-hour usage is converted to a weekly share.',
+    bondNext: '{n} points to {stage}', bondComplete: 'Every look unlocked ♡', bondPoints: 'points',
+    bondLocked: 'Locked', bondUnlockAt: 'Unlocks at {n} points', bondAuto: 'Auto: latest look',
+    bondPaused: 'Paused · your progress is kept.', bondManual: 'Manual input does not earn bond points.',
+    bondNeedsData: 'Connect automatic usage to start earning from new usage.', bondEvolved: '{service}: {stage} reached! A new look is unlocked.',
+  },
+  ja: {
+    bondCollection: '♡ 友達の関係・デザイン', bondActive: '有効',
+    bond_acquaintance: '知り合い', bond_friend: '友達', bond_close: '親しい友達', bond_best: '親友', bond_soulmate: 'ソウルメイト',
+    bondHelp: '現在のテーマで有効な友達に使用量がたまります。テーマごとに成長を保存し、獲得した姿を再選択できます。起動中はミニモードやトレイでも成長します。',
+    bondCalibration: '実際のトークン数ではなく、自動取得した使用枠の増加分で成長します。週間1% = 1ポイント。ソウルメイトは429ポイント（週間100% × 約4.3週）で、Proを継続して使う約1か月が目安です。プラン・モデル・使用量で期間は変わります。週間データがなければ5時間枠を週間比率に換算します。',
+    bondNext: '{stage}まで{n}ポイント', bondComplete: 'すべての姿を獲得しました ♡', bondPoints: 'ポイント',
+    bondLocked: '未獲得', bondUnlockAt: '{n}ポイントで獲得', bondAuto: '最新の姿を自動選択',
+    bondPaused: '休止中・成長は保存されます。', bondManual: '手動入力は成長に反映しません。',
+    bondNeedsData: '自動取得に接続後、新しい使用分から成長します。', bondEvolved: '{service}と{stage}を達成！新しい姿を獲得しました。',
+  },
+  zh: {
+    bondCollection: '♡ 好友关系 · 外观收藏', bondActive: '启用',
+    bond_acquaintance: '相识', bond_friend: '朋友', bond_close: '亲密', bond_best: '挚友', bond_soulmate: '灵魂伴侣',
+    bondHelp: '使用会增加当前主题中已启用好友的关系值。每个主题独立保存成长，可随时选择已解锁外观。应用运行时，迷你模式和托盘也会积累。',
+    bondCalibration: '根据自动获取的额度增长计算，而非实际令牌数。每周额度1% = 1关系值。灵魂伴侣需要429点（每周100% × 约4.3周），目标为持续使用Pro约一个月。套餐、模型和使用量会影响时间。没有每周数据时按比例换算5小时额度。',
+    bondNext: '距{stage}还需{n}点', bondComplete: '所有外观已解锁 ♡', bondPoints: '关系值',
+    bondLocked: '未解锁', bondUnlockAt: '{n}点解锁', bondAuto: '自动使用最新外观',
+    bondPaused: '已暂停 · 保留成长。', bondManual: '手动输入不增加关系值。',
+    bondNeedsData: '连接自动用量后，从新的使用量开始积累。', bondEvolved: '{service}达到{stage}！新外观已解锁。',
+  },
+  es: {
+    bondCollection: '♡ Amistad · colección de diseños', bondActive: 'Activo',
+    bond_acquaintance: 'Conocido', bond_friend: 'Amigo', bond_close: 'Cercano', bond_best: 'Mejor amigo', bond_soulmate: 'Alma gemela',
+    bondHelp: 'El uso hace crecer a los amigos activos del tema actual. Cada tema guarda su progreso. Puedes volver a elegir cualquier diseño desbloqueado. También crecen en modo mini y en la bandeja mientras la app está abierta.',
+    bondCalibration: 'Se usan los aumentos automáticos de cuota, no el número de tokens. Un 1% semanal = 1 punto. Alma gemela requiere 429 puntos (100% semanal × 4,3 semanas), aproximadamente un mes de uso regular de Pro. Depende del plan, modelo y uso. Sin datos semanales, la cuota de cinco horas se convierte en una proporción semanal.',
+    bondNext: '{n} puntos hasta {stage}', bondComplete: 'Todos los diseños desbloqueados ♡', bondPoints: 'puntos',
+    bondLocked: 'Bloqueado', bondUnlockAt: 'Se desbloquea con {n} puntos', bondAuto: 'Último diseño automático',
+    bondPaused: 'En pausa · se conserva el progreso.', bondManual: 'La entrada manual no suma puntos.',
+    bondNeedsData: 'Conecta el uso automático para acumular con el nuevo uso.', bondEvolved: '¡{service}: {stage}! Nuevo diseño desbloqueado.',
+  },
+};
+for (const lang of Object.keys(I18N_BOND)) Object.assign(I18N[lang], I18N_BOND[lang]);

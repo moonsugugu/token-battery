@@ -47,6 +47,30 @@ const SVC = { claude: 'Claude', codex: 'Codex' };
 const svcOn = (s) => store[s === 'claude' ? 'showClaude' : 'showCodex'] !== false;
 const svcData = (s) => (usage && usage[s] && usage[s].ok ? usage[s] : null);
 
+// ---------- 친구 관계와 해금한 모습 ----------
+const bondView = (s) => Companions.view(store.companions, store.theme || 'cyber', s);
+const bondName = (rank) => t('bond_' + Companions.stages[rank].id);
+function bondStatus(s) {
+  const friend = bondView(s);
+  const stage = Companions.stages[friend.unlocked];
+  const hint = friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: Math.ceil(friend.next.points - friend.points) }) : t('bondComplete');
+  return `<div class="bond-status" title="${esc(hint)}"><span>${stage.icon} ${esc(bondName(friend.unlocked))}</span><div class="bond-track" role="progressbar" aria-label="${esc(hint)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.floor(friend.progress)}"><i style="width:${friend.progress}%"></i></div></div>`;
+}
+function renderBondCollection() {
+  if (!store) return;
+  const theme = store.theme || 'cyber';
+  $('bondCollection').innerHTML = ['claude', 'codex'].map((s) => {
+    const friend = bondView(s);
+    return `<div class="bond-friend"><div class="bond-heading"><b>${SVC[s]} · ${esc(bondName(friend.unlocked))}</b><label><input type="checkbox" data-bond-active="${s}" ${svcOn(s) ? 'checked' : ''}> ${esc(t('bondActive'))}</label></div>
+      ${bondStatus(s)}<div class="bond-designs">${Companions.stages.map((stage, rank) => {
+        const locked = rank > friend.unlocked;
+        const label = bondName(rank);
+        return `<button type="button" class="bond-design ${rank === friend.selected ? 'selected' : ''}" data-bond-service="${s}" data-bond-rank="${rank}" ${locked ? 'disabled' : ''} aria-label="${esc(label + (locked ? ' · ' + t('bondLocked') : ''))}" aria-pressed="${rank === friend.selected}" title="${esc(locked ? t('bondUnlockAt', { n: Math.ceil(stage.points) }) : label)}"><span class="bond-preview">${drawCharacter(theme, s, 'fresh', null, rank)}</span><span>${locked ? '🔒 ' : ''}${esc(label)}</span></button>`;
+      }).join('')}</div><div class="bond-footer"><span>${friend.points.toFixed(1)} / ${Math.ceil(Companions.stages[4].points)} ${esc(t('bondPoints'))}</span><button type="button" class="chip" data-bond-service="${s}" data-bond-rank="auto" aria-pressed="${store.companions?.friends?.[Companions.key(theme, s)]?.selected == null}">${esc(t('bondAuto'))}</button></div>
+      <p class="note">${esc(!svcOn(s) ? t('bondPaused') : svcData(s)?.manual ? t('bondManual') : !svcData(s) ? t('bondNeedsData') : friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: Math.ceil(friend.next.points - friend.points) }) : t('bondComplete'))}</p></div>`;
+  }).join('');
+}
+
 // ---------- 표시 기준: 남은 한도(기본) 또는 사용량 ----------
 const useRemain = () => store.basis !== 'used';
 const useResetClock = () => store.timeBasis !== 'remaining';
@@ -120,15 +144,17 @@ function crewCard(s) {
   const reset5 = d && d.fiveHour ? resetDisplay(d.fiveHour.resetsAt) : '–';
   const resetWeek = d && d.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–';
   const [bIcon, bCls] = BADGE[st];
+  const friend = bondView(s);
   return `
     <div class="crewcard ${s} st-${st}" ${!d && s === 'claude' ? 'data-act="login"' : ''}>
       <div class="portrait">
         <span class="speech">${bubble}</span>
-        ${drawHeroSprite(theme, s, st)}
-        <div class="avatar">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888')}</div>
+        ${drawHeroSprite(theme, s, st, friend.selected)}
+        <div class="avatar">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888', friend.selected)}</div>
         <span class="stbadge ${bCls}">${bIcon}</span>
       </div>
       <div class="cname"><b>${SVC[s]}</b><small>${world[s === 'claude' ? 3 : 4]}</small></div>
+      ${bondStatus(s)}
       <div class="cstats">
         <div class="ringwrap">${ringSVG(v5, c5)}<div class="rval"><b style="${v5 != null && dangerColor(v5) ? `color:${dangerColor(v5)}` : ''}">${v5 ?? '–'}<small>%</small></b></div></div>
         <div class="cside">
@@ -226,8 +252,9 @@ function renderChar() {
     html.push(`
       <div class="actor st-${st}" ${!d && s === 'claude' ? 'data-act="expand-login"' : ''}>
         <div class="bubble">${bubble}</div>
-        <div class="avatar" style="color:var(--${s})">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888')}</div>
+        <div class="avatar" style="color:var(--${s})">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888', bondView(s).selected)}</div>
         <div class="aname"><b style="color:var(--${s})">${world[s === 'claude' ? 3 : 4]}</b> <small>${SVC[s]}</small></div>
+        ${bondStatus(s)}
         ${meter(world[0], r5, 'h5')}
         ${meter(world[1], rw, 'wk')}
         <div class="areset">${reset}</div>
@@ -338,9 +365,15 @@ async function refresh() {
   document.querySelector('.titlebar .dot').classList.add('loading');
   try {
     usage = await W.getUsage();
+    if (usage.companions) store.companions = usage.companions;
+    if (usage.unlocks?.length) {
+      $('bondNotice').textContent = usage.unlocks.map((x) => t('bondEvolved', { service: SVC[x.service], stage: bondName(x.to) })).join(' · ');
+      $('bondNotice').classList.remove('hidden');
+    }
     renderUsage();
     renderMini();
     renderChar();
+    renderBondCollection();
     checkAlerts();
     recordHistory();
   } finally {
@@ -536,10 +569,14 @@ function applyTheme(id) {
   $('themeLogo').textContent = th.logo;
   $('themeSub').textContent = th.sub;
   $('themeFoot').textContent = th.foot;
-  if (store) { store.theme = th.id; renderChar(); renderUsage(); }
+  if (store) { store.theme = th.id; renderChar(); renderUsage(); renderBondCollection(); }
   fit();
 }
-$('themeSel').onchange = () => { applyTheme($('themeSel').value); W.setStore({ theme: $('themeSel').value }); };
+$('themeSel').onchange = async () => {
+  store = await W.setStore({ theme: $('themeSel').value });
+  $('bondNotice').classList.add('hidden');
+  applyTheme(store.theme);
+};
 
 // ---------- 언어 ----------
 function fillSelect(el, items, value) {
@@ -635,6 +672,7 @@ function applyLang(lang) {
   renderUsage();
   renderMini();
   renderChar();
+  renderBondCollection();
   refreshNotificationSettings();
 }
 $('langSel').onchange = async () => { store = await W.setStore({ lang: $('langSel').value }); applyLang(store.lang); };
@@ -655,6 +693,7 @@ function applyOptions() {
   renderUsage();
   renderMini();
   renderChar();
+  renderBondCollection();
   fit();
 }
 const bindOpt = (id, key) => {
@@ -662,6 +701,22 @@ const bindOpt = (id, key) => {
 };
 bindOpt('showClaude', 'showClaude');
 bindOpt('showCodex', 'showCodex');
+$('bondCollection').addEventListener('change', async (event) => {
+  const service = event.target.dataset.bondActive;
+  if (!service) return;
+  store = await W.setStore({ [service === 'claude' ? 'showClaude' : 'showCodex']: event.target.checked });
+  applyOptions();
+});
+$('bondCollection').addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-bond-rank]');
+  if (!button) return;
+  const theme = store.theme || 'cyber';
+  button.disabled = true;
+  try {
+    store.companions = await W.selectCompanion({ theme, service: button.dataset.bondService, selected: button.dataset.bondRank === 'auto' ? null : Number(button.dataset.bondRank) });
+    renderChar(); renderUsage();
+  } finally { renderBondCollection(); fit(); }
+});
 bindOpt('optAlerts', 'alertsOn');
 bindOpt('optCost', 'costOn');
 for (const r of document.querySelectorAll('input[name=basis]')) {

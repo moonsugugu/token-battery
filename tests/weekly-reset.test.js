@@ -27,6 +27,7 @@ function renderer(timeBasis = 'remaining') {
   });
   const root = path.join(__dirname, '..', 'renderer');
   vm.runInContext(fs.readFileSync(path.join(root, 'i18n.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(root, 'companions.js'), 'utf8'), context);
   const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   // Load the actual formatting and rendering functions without starting Electron or polling real accounts.
   vm.runInContext(app.slice(0, app.indexOf('// ---------- 사용량 알림')), context);

@@ -67,6 +67,12 @@
       <label><input type="checkbox" id="showClaude"> Claude</label>
       <label><input type="checkbox" id="showCodex"> Codex</label>
     </div>
+    <details class="fold bond-settings" id="bondFold">
+      <summary data-i18n="bondCollection"></summary>
+      <p class="note" data-i18n="bondHelp"></p>
+      <div id="bondCollection"></div>
+      <p class="note" data-i18n="bondCalibration"></p>
+    </details>
     <div class="row"><span data-i18n="basisLbl"></span>
       <label><input type="radio" name="basis" value="remain" id="basisRemain"> <span data-i18n="basisRemain"></span></label>
       <label><input type="radio" name="basis" value="used" id="basisUsed"> <span data-i18n="basisUsed"></span></label>
@@ -178,6 +184,7 @@
     <span class="rule"></span>
     <span class="daymsg" id="dayMsg"></span>
   </div>
+  <div class="bond-notice hidden" id="bondNotice" role="status" aria-live="polite"></div>
   <div class="crew" id="crew"></div>
   <div class="note crew-note" id="claudeNote"></div>
   <div class="note crew-note" id="codexNote"></div>
@@ -253,6 +260,7 @@
   <div class="grip gl" data-grip="left" data-i18n-title="resize"></div><div class="grip gr" data-grip="right" data-i18n-title="resize"></div>
 </div>
 <script src="i18n.js"></script>
+<script src="companions.js"></script>
 <script src="characters.js"></script>
 <script src="app.js"></script>
 </body>
