@@ -10,6 +10,11 @@
 </head>
 <body class="mode-mini theme-cyber">
 
+<!-- ===== 작업표시줄: 활성 서비스마다 한 줄 ===== -->
+<div class="card taskbar" id="taskbarCard" tabindex="0" role="button" data-i18n-title="taskbarHelp" data-i18n-aria-label="taskbarHelp">
+  <div id="taskbarRows"></div>
+</div>
+
 <!-- ===== 미니 모드 (기본) ===== -->
 <div class="card mini" id="miniCard">
   <div class="mini-rows" id="miniRows"></div>
@@ -17,6 +22,7 @@
     <button class="icon" data-go="settings" data-i18n-title="settings">⚙</button>
     <button class="icon" data-go="full" data-i18n-title="expand">⤢</button>
     <button class="icon" data-go="char" data-i18n-title="charMode">☺</button>
+    <button class="icon" data-go="taskbar" data-i18n-title="taskbarMode">▤</button>
     <button class="icon" data-go="hide" data-i18n-title="hide">✕</button>
   </div>
   <div class="grip gl" data-grip="left" data-i18n-title="resize"></div><div class="grip gr" data-grip="right" data-i18n-title="resize"></div>
@@ -28,6 +34,7 @@
     <button class="icon" data-go="settings" data-i18n-title="settings">⚙</button>
     <button class="icon" data-go="full" data-i18n-title="expand">⤢</button>
     <button class="icon" data-go="mini" data-i18n-title="mini">▭</button>
+    <button class="icon" data-go="taskbar" data-i18n-title="taskbarMode">▤</button>
     <button class="icon" data-go="hide" data-i18n-title="hide">✕</button>
   </div>
   <div class="scene" id="scene"></div>
@@ -49,6 +56,7 @@
       <button class="icon" id="btnRefresh" data-i18n-title="refresh">⟳</button>
       <button class="icon" data-go="char" data-i18n-title="charMode">☺</button>
       <button class="icon" data-go="mini" data-i18n-title="mini">▭</button>
+      <button class="icon" data-go="taskbar" data-i18n-title="taskbarMode">▤</button>
       <button class="icon" data-go="hide" data-i18n-title="hide">✕</button>
     </div>
     <div class="brandrow" aria-label="문수네집 공식 링크">
@@ -63,10 +71,18 @@
   <section class="panel settings hidden" id="settings">
     <label class="row"><span data-i18n="lang"></span> <select id="langSel"></select></label>
     <label class="row"><span data-i18n="theme"></span> <select id="themeSel"></select></label>
+    <label class="row"><span data-i18n="displayMode"></span> <select id="modeSel"></select></label>
     <div class="row"><span data-i18n="show"></span>
       <label><input type="checkbox" id="showClaude"> Claude</label>
       <label><input type="checkbox" id="showCodex"> Codex</label>
     </div>
+    <details class="fold bond-settings" id="bondFold">
+      <summary data-i18n="bondCollection"></summary>
+      <p class="note" data-i18n="bondHelp"></p>
+      <label class="row"><span data-i18n="bondPreviewState"></span> <select id="bondPreview"></select></label>
+      <div id="bondCollection"></div>
+      <p class="note" data-i18n="bondCalibration"></p>
+    </details>
     <div class="row"><span data-i18n="basisLbl"></span>
       <label><input type="radio" name="basis" value="remain" id="basisRemain"> <span data-i18n="basisRemain"></span></label>
       <label><input type="radio" name="basis" value="used" id="basisUsed"> <span data-i18n="basisUsed"></span></label>
@@ -178,6 +194,7 @@
     <span class="rule"></span>
     <span class="daymsg" id="dayMsg"></span>
   </div>
+  <div class="bond-notice hidden" id="bondNotice" role="status" aria-live="polite"></div>
   <div class="crew" id="crew"></div>
   <div class="note crew-note" id="claudeNote"></div>
   <div class="note crew-note" id="codexNote"></div>
@@ -253,6 +270,7 @@
   <div class="grip gl" data-grip="left" data-i18n-title="resize"></div><div class="grip gr" data-grip="right" data-i18n-title="resize"></div>
 </div>
 <script src="i18n.js"></script>
+<script src="companions.js"></script>
 <script src="characters.js"></script>
 <script src="app.js"></script>
 </body>

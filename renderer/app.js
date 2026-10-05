@@ -3,6 +3,7 @@ const W = window.widget;
 
 let store = null;
 let usage = null;
+let tokenStatus = null;
 
 // ---------- 유틸 ----------
 function fmtDur(ms) {
@@ -46,6 +47,33 @@ const clampPct = (w) => Math.max(0, Math.min(100, Math.round(w.percent)));
 const SVC = { claude: 'Claude', codex: 'Codex' };
 const svcOn = (s) => store[s === 'claude' ? 'showClaude' : 'showCodex'] !== false;
 const svcData = (s) => (usage && usage[s] && usage[s].ok ? usage[s] : null);
+
+// ---------- 친구 관계와 해금한 모습 ----------
+const bondView = (s) => Companions.view(store.companions, store.theme || 'cyber', s);
+const bondName = (rank) => t('bond_' + Companions.stages[rank].id);
+const fmtTokens = (n) => new Intl.NumberFormat(LANG, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+function bondStatus(s) {
+  const friend = bondView(s);
+  const stage = Companions.stages[friend.unlocked];
+  const hint = friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: fmtTokens(Math.max(0, friend.next.tokens - friend.tokens)) }) : t('bondComplete');
+  return `<div class="bond-status" title="${esc(hint)}"><span>${stage.icon} ${esc(bondName(friend.unlocked))}</span><div class="bond-track" role="progressbar" aria-label="${esc(hint)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.floor(friend.progress)}"><i style="width:${friend.progress}%"></i></div></div>`;
+}
+function renderBondCollection() {
+  if (!store) return;
+  const theme = store.theme || 'cyber';
+  const preview = $('bondPreview').value || 'fresh';
+  $('bondCollection').innerHTML = ['claude', 'codex'].map((s) => {
+    const friend = bondView(s);
+    return `<div class="bond-friend"><div class="bond-heading"><b>${SVC[s]} · ${esc(bondName(friend.unlocked))}</b><label><input type="checkbox" data-bond-active="${s}" ${svcOn(s) ? 'checked' : ''}> ${esc(t('bondActive'))}</label></div>
+      ${bondStatus(s)}<div class="bond-designs">${Companions.stages.map((stage, rank) => {
+        const locked = rank > friend.unlocked;
+        const label = bondName(rank);
+        return `<button type="button" class="bond-design ${rank === friend.selected ? 'selected' : ''}" data-bond-service="${s}" data-bond-rank="${rank}" ${locked ? 'disabled' : ''} aria-label="${esc(label + (locked ? ' · ' + t('bondLocked') : ''))}" aria-pressed="${rank === friend.selected}" title="${esc(locked ? t('bondUnlockAt', { n: fmtTokens(Math.ceil(stage.share * friend.goal)) }) : label)}"><span class="bond-preview">${drawCharacter(theme, s, preview, null, rank)}</span><span>${locked ? '🔒 ' : ''}${esc(label)}</span></button>`;
+      }).join('')}</div><div class="bond-footer"><span title="${friend.tokens.toLocaleString(LANG)} / ${friend.goal.toLocaleString(LANG)}">${fmtTokens(friend.tokens)} / ${fmtTokens(friend.goal)} ${esc(t('bondPoints'))}</span><button type="button" class="chip" data-bond-service="${s}" data-bond-rank="auto" aria-pressed="${store.companions?.friends?.[Companions.key(theme, s)]?.selected == null}">${esc(t('bondAuto'))}</button></div>
+      <label class="bond-target">${esc(t('bondTarget'))}<input type="number" min="1" max="10000" step="1" data-token-target="${s}" value="${friend.goal / 1000000}"> ${esc(t('bondMillion'))}</label>
+      <p class="note">${esc(!svcOn(s) ? t('bondPaused') : tokenStatus?.[s]?.error ? t('bondReadError') : !tokenStatus?.[s]?.available ? t('bondNeedsData') : friend.next ? t('bondNext', { stage: bondName(friend.unlocked + 1), n: fmtTokens(Math.max(0, friend.next.tokens - friend.tokens)) }) : t('bondComplete'))}</p></div>`;
+  }).join('');
+}
 
 // ---------- 표시 기준: 남은 한도(기본) 또는 사용량 ----------
 const useRemain = () => store.basis !== 'used';
@@ -120,15 +148,17 @@ function crewCard(s) {
   const reset5 = d && d.fiveHour ? resetDisplay(d.fiveHour.resetsAt) : '–';
   const resetWeek = d && d.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–';
   const [bIcon, bCls] = BADGE[st];
+  const friend = bondView(s);
   return `
     <div class="crewcard ${s} st-${st}" ${!d && s === 'claude' ? 'data-act="login"' : ''}>
       <div class="portrait">
         <span class="speech">${bubble}</span>
-        ${drawHeroSprite(theme, s, st)}
-        <div class="avatar">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888')}</div>
+        ${drawHeroSprite(theme, s, st, friend.selected)}
+        <div class="avatar">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888', friend.selected)}</div>
         <span class="stbadge ${bCls}">${bIcon}</span>
       </div>
       <div class="cname"><b>${SVC[s]}</b><small>${world[s === 'claude' ? 3 : 4]}</small></div>
+      ${bondStatus(s)}
       <div class="cstats">
         <div class="ringwrap">${ringSVG(v5, c5)}<div class="rval"><b style="${v5 != null && dangerColor(v5) ? `color:${dangerColor(v5)}` : ''}">${v5 ?? '–'}<small>%</small></b></div></div>
         <div class="cside">
@@ -202,6 +232,19 @@ function renderMini() {
   fit();
 }
 
+// One compact row per enabled service; the main process anchors it to the taskbar.
+function renderTaskbar() {
+  if (!store) return;
+  const rows = ['claude', 'codex'].filter(svcOn).map((s) => {
+    const d = svcData(s);
+    const v5 = shown(d?.fiveHour), vw = shown(d?.weekly);
+    const hint = `${SVC[s]} · ${useRemain() ? t('remainLbl') : t('usedLbl')}\n${t('h5')}: ${v5 ?? '–'}% · ${d?.fiveHour ? resetDisplay(d.fiveHour.resetsAt, { date: true }) : '–'}\n${t('wk')}: ${vw ?? '–'}% · ${d?.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–'}`;
+    return `<div class="taskbar-row" title="${esc(hint)}"><span class="taskbar-service ${s}"><i></i>${SVC[s]}</span><b style="color:${v5 != null && dangerColor(v5) || 'inherit'}">${v5 ?? '–'}%</b><span class="taskbar-week">${esc(t('weekShort'))} <b style="color:${vw != null && dangerColor(vw) || 'inherit'}">${vw ?? '–'}%</b></span></div>`;
+  });
+  $('taskbarRows').innerHTML = rows.join('') || `<div class="taskbar-empty">${esc(t('turnOn'))}</div>`;
+  fit();
+}
+
 // ---------- 캐릭터 모드 ----------
 const cssVar = (name) => getComputedStyle(document.body).getPropertyValue(name).trim();
 function renderChar() {
@@ -226,8 +269,9 @@ function renderChar() {
     html.push(`
       <div class="actor st-${st}" ${!d && s === 'claude' ? 'data-act="expand-login"' : ''}>
         <div class="bubble">${bubble}</div>
-        <div class="avatar" style="color:var(--${s})">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888')}</div>
+        <div class="avatar" style="color:var(--${s})">${drawCharacter(theme, s, st, cssVar('--' + s) || '#888', bondView(s).selected)}</div>
         <div class="aname"><b style="color:var(--${s})">${world[s === 'claude' ? 3 : 4]}</b> <small>${SVC[s]}</small></div>
+        ${bondStatus(s)}
         ${meter(world[0], r5, 'h5')}
         ${meter(world[1], rw, 'wk')}
         <div class="areset">${reset}</div>
@@ -338,9 +382,17 @@ async function refresh() {
   document.querySelector('.titlebar .dot').classList.add('loading');
   try {
     usage = await W.getUsage();
+    if (usage.companions) store.companions = usage.companions;
+    if (usage.tokens) tokenStatus = usage.tokens;
+    if (usage.unlocks?.length) {
+      $('bondNotice').textContent = usage.unlocks.map((x) => t('bondEvolved', { service: SVC[x.service], stage: bondName(x.to) })).join(' · ');
+      $('bondNotice').classList.remove('hidden');
+    }
     renderUsage();
     renderMini();
     renderChar();
+    renderTaskbar();
+    if (!document.activeElement?.matches('[data-token-target]')) renderBondCollection();
     checkAlerts();
     recordHistory();
   } finally {
@@ -536,10 +588,14 @@ function applyTheme(id) {
   $('themeLogo').textContent = th.logo;
   $('themeSub').textContent = th.sub;
   $('themeFoot').textContent = th.foot;
-  if (store) { store.theme = th.id; renderChar(); renderUsage(); }
+  if (store) { store.theme = th.id; renderChar(); renderUsage(); renderBondCollection(); }
   fit();
 }
-$('themeSel').onchange = () => { applyTheme($('themeSel').value); W.setStore({ theme: $('themeSel').value }); };
+$('themeSel').onchange = async () => {
+  store = await W.setStore({ theme: $('themeSel').value });
+  $('bondNotice').classList.add('hidden');
+  applyTheme(store.theme);
+};
 
 // ---------- 언어 ----------
 function fillSelect(el, items, value) {
@@ -628,13 +684,17 @@ function applyLang(lang) {
   for (const el of document.querySelectorAll('[data-i18n-ph]')) el.placeholder = t(el.dataset.i18nPh);
   renderNotifyGuide();
   fillSelect($('langSel'), LANGS.map((l) => [l.id, l.name]), LANG);
+  fillSelect($('bondPreview'), [['fresh', '100%'], ['ok', '60%'], ['tired', '20%'], ['dizzy', '5%'], ['sleep', '0%']], $('bondPreview').value || 'fresh');
   fillSelect($('themeSel'), THEMES.map((th, i) => [th.id, `${String(i + 1).padStart(2, '0')} ${THEME_NAMES[LANG][i]}`]), store.theme || 'cyber');
   fillSelect($('bgmMood'), MOOD_QUERIES.map(([id], i) => [id, MOOD_NAMES[LANG][i]]), store.bgmLast || 'lofi');
-  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit') });
+  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit'), taskbar: t('taskbarMode'), mini: t('mini'), char: t('charMode'), full: t('expand') });
+  fillSelect($('modeSel'), [['taskbar', t('taskbarMode')], ['mini', t('mini')], ['char', t('charMode')], ['full', t('expand')]], store.mode || 'mini');
   renderSubs();
   renderUsage();
   renderMini();
   renderChar();
+  renderBondCollection();
+  renderTaskbar();
   refreshNotificationSettings();
 }
 $('langSel').onchange = async () => { store = await W.setStore({ lang: $('langSel').value }); applyLang(store.lang); };
@@ -655,6 +715,8 @@ function applyOptions() {
   renderUsage();
   renderMini();
   renderChar();
+  renderTaskbar();
+  renderBondCollection();
   fit();
 }
 const bindOpt = (id, key) => {
@@ -662,6 +724,41 @@ const bindOpt = (id, key) => {
 };
 bindOpt('showClaude', 'showClaude');
 bindOpt('showCodex', 'showCodex');
+$('bondCollection').addEventListener('change', async (event) => {
+  const targetService = event.target.dataset.tokenTarget;
+  if (targetService) {
+    const millions = Number(event.target.value);
+    if (!event.target.checkValidity() || !Number.isInteger(millions)) { event.target.reportValidity(); return; }
+    store.companions = await W.setTokenTarget({ service: targetService, tokens: millions * 1000000 });
+    renderChar(); renderUsage(); renderBondCollection(); return;
+  }
+  const service = event.target.dataset.bondActive;
+  if (!service) return;
+  store = await W.setStore({ [service === 'claude' ? 'showClaude' : 'showCodex']: event.target.checked });
+  applyOptions();
+});
+$('bondPreview').onchange = renderBondCollection;
+W.onCompanions((state) => {
+  if (!store) return;
+  store.companions = state.companions;
+  tokenStatus = state.tokens;
+  if (state.unlocks?.length) {
+    $('bondNotice').textContent = state.unlocks.map((x) => t('bondEvolved', { service: SVC[x.service], stage: bondName(x.to) })).join(' · ');
+    $('bondNotice').classList.remove('hidden');
+  }
+  renderUsage(); renderChar();
+  if (!$('settings').classList.contains('hidden') && !document.activeElement?.dataset.tokenTarget) renderBondCollection();
+});
+$('bondCollection').addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-bond-rank]');
+  if (!button) return;
+  const theme = store.theme || 'cyber';
+  button.disabled = true;
+  try {
+    store.companions = await W.selectCompanion({ theme, service: button.dataset.bondService, selected: button.dataset.bondRank === 'auto' ? null : Number(button.dataset.bondRank) });
+    renderChar(); renderUsage();
+  } finally { renderBondCollection(); fit(); }
+});
 bindOpt('optAlerts', 'alertsOn');
 bindOpt('optCost', 'costOn');
 for (const r of document.querySelectorAll('input[name=basis]')) {
@@ -677,17 +774,18 @@ for (const c of document.querySelectorAll('.lvl')) {
   };
 }
 
-// ---------- 창/모드 (mini · char · full) ----------
+// ---------- 창/모드 (taskbar · mini · char · full) ----------
 let mode = 'mini';
-const CARD = { mini: 'miniCard', char: 'charCard', full: 'card' };
+const CARD = { taskbar: 'taskbarCard', mini: 'miniCard', char: 'charCard', full: 'card' };
 let fitAnchor = 'right';
 let fitRequest = 0;
 function fit() {
   const request = ++fitRequest;
   requestAnimationFrame(() => {
     const el = $(CARD[mode]);
-    const width = mode === 'full' ? 392 : el.offsetWidth + 8;
-    W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor).then(async (bounds) => {
+    const width = mode === 'full' ? 392 : el.offsetWidth + (mode === 'taskbar' ? 0 : 8);
+    const height = el.offsetHeight + (mode === 'taskbar' ? 0 : mode === 'full' ? 14 : 8);
+    W.fitSize(width, height, fitAnchor).then(async (bounds) => {
       if (request !== fitRequest) return;
       if (mode === 'full' && bounds?.maxFullCardHeight) {
         const maxHeight = `${bounds.maxFullCardHeight}px`;
@@ -699,14 +797,14 @@ function fit() {
         $('card').style.maxHeight = '';
       }
       if (request !== fitRequest) return;
-      W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor);
+      if (mode !== 'taskbar') W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor);
     }).catch(() => {});
   });
 }
 
 // ---------- 크기 조절: 왼쪽/오른쪽 아래 손잡이를 끌면 위젯 전체 배율이 바뀐다 ----------
 const SCALE_MIN = 0.6, SCALE_MAX = 2.5;
-const modeScale = () => Math.min(SCALE_MAX, Math.max(SCALE_MIN, (store.scale || {})[mode] || 1));
+const modeScale = () => mode === 'taskbar' ? 1 : Math.min(SCALE_MAX, Math.max(SCALE_MIN, (store.scale || {})[mode] || 1));
 function applyScale() { W.setZoom(modeScale()); fit(); }
 for (const g of document.querySelectorAll('.grip')) {
   g.addEventListener('pointerdown', (e) => {
@@ -756,16 +854,22 @@ W.onNear((v) => document.body.classList.toggle('near', v));
 document.fonts.ready.then(() => fit());
 document.fonts.addEventListener('loadingdone', () => fit());
 function setMode(m) {
-  mode = ['mini', 'char', 'full'].includes(m) ? m : 'mini';
-  for (const x of ['mini', 'char', 'full']) document.body.classList.toggle('mode-' + x, x === mode);
+  mode = ['taskbar', 'mini', 'char', 'full'].includes(m) ? m : 'mini';
+  for (const x of ['taskbar', 'mini', 'char', 'full']) document.body.classList.toggle('mode-' + x, x === mode);
   const patch = { mode };
   if (mode !== 'full') patch.compactMode = mode;
   store = { ...store, ...patch };
   W.setStore(patch);
+  $('modeSel').value = mode;
+  if (mode === 'taskbar') renderTaskbar();
   if (mode === 'char') renderChar();
   applyScale();
 }
-const compactMode = () => (store.compactMode === 'char' ? 'char' : 'mini');
+const compactMode = () => ['taskbar', 'char'].includes(store.compactMode) ? store.compactMode : 'mini';
+$('modeSel').onchange = () => setMode($('modeSel').value);
+W.onMode(setMode);
+$('taskbarCard').addEventListener('dblclick', () => setMode('full'));
+$('taskbarCard').addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setMode('full'); } });
 async function openSettings() {
   setMode('full');
   $('settings').classList.remove('hidden');
@@ -847,7 +951,8 @@ for (const b of document.querySelectorAll('.hk')) {
 }
 W.onHotkey((name, wasVisible) => {
   if (name === 'toggle') {
-    if (!wasVisible) setMode('mini');
+    if (!wasVisible) setMode('taskbar');
+    else if (mode === 'taskbar') setMode('mini');
     else if (mode === 'mini') setMode('char');
     else if (mode === 'char') setMode('full');
     else W.hide();
@@ -930,6 +1035,6 @@ for (const b of document.querySelectorAll('.brand-btn')) b.onclick = (e) => { e.
   renderHotkeys();
   await refresh();
   setInterval(refresh, 60 * 1000); // 1분마다 사용량 갱신
-  setInterval(() => { renderUsage(); renderMini(); renderChar(); }, 20 * 1000); // 남은 시간 카운트다운
+  setInterval(() => { renderUsage(); renderMini(); renderChar(); renderTaskbar(); }, 20 * 1000); // 남은 시간 카운트다운
   setInterval(renderSubs, 30 * 60 * 1000); // 날짜 바뀌면 D-day 갱신
 })();

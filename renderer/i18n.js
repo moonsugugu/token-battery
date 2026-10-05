@@ -543,3 +543,96 @@ const I18N_CREW = {
   },
 };
 for (const l of Object.keys(I18N_CREW)) Object.assign(I18N[l], I18N_CREW[l]);
+
+const I18N_TASKBAR = {
+  "ko": {
+    "displayMode": "표시 모드",
+    "taskbarMode": "작업표시줄 모드",
+    "taskbarHelp": "더블클릭: 상세 보기 · 오른쪽 클릭: 모드 선택",
+    "hkToggle": "모드 전환 (작업표시줄→미니→캐릭터→전체→끄기)"
+  },
+  "en": {
+    "displayMode": "Display mode",
+    "taskbarMode": "Taskbar mode",
+    "taskbarHelp": "Double-click for details · right-click to choose a mode",
+    "hkToggle": "Cycle modes (taskbar→mini→character→full→off)"
+  },
+  "ja": {
+    "displayMode": "表示モード",
+    "taskbarMode": "タスクバーモード",
+    "taskbarHelp": "ダブルクリックで詳細・右クリックでモード選択",
+    "hkToggle": "モード切替 (タスクバー→ミニ→キャラ→全体→オフ)"
+  },
+  "zh": {
+    "displayMode": "显示模式",
+    "taskbarMode": "任务栏模式",
+    "taskbarHelp": "双击查看详情 · 右键选择模式",
+    "hkToggle": "切换模式 (任务栏→迷你→角色→完整→关闭)"
+  },
+  "es": {
+    "displayMode": "Modo de vista",
+    "taskbarMode": "Modo barra de tareas",
+    "taskbarHelp": "Doble clic para detalles · clic derecho para cambiar modo",
+    "hkToggle": "Cambiar modo (barra→mini→personaje→completo→off)"
+  }
+};
+for (const l of Object.keys(I18N_TASKBAR)) Object.assign(I18N[l], I18N_TASKBAR[l]);
+
+const I18N_BOND = {
+  ko: {
+    bondCollection: '♡ 친구 관계 · 디자인 보관함', bondActive: '활성화',
+    bond_acquaintance: '지인', bond_friend: '친구', bond_close: '친밀', bond_best: '단짝', bond_soulmate: '소울메이트',
+    bondHelp: '현재 디자인에서 활성화한 친구와 함께 사용하면 관계도가 쌓여요. 테마마다 친구의 성장은 따로 저장되며, 달성한 모습은 언제든 다시 선택할 수 있어요. 미니 모드와 트레이에서도 앱이 실행 중이면 쌓여요.',
+    bondCalibration: '이 PC의 Claude Code·Codex 로그에 기록된 실제 입력·출력 토큰(캐시 포함)으로 성장해요. 웹 대화와 다른 기기의 사용량은 포함되지 않아요. 기본 소울메이트 목표는 3,000만 토큰: 하루 100만 × 30일이라는 게임 난이도 추정치이며 Pro의 고정 제공량이 아니에요. 내 사용량에 맞게 목표를 바꿀 수 있어요. 예전 버전에서 해금한 모습은 보존하고, 실제 토큰 적립은 새 사용분부터 시작해요.',
+    bondNext: '{stage}까지 {n} 토큰', bondComplete: '모든 모습을 해금했어요 ♡', bondPoints: '토큰',
+    bondTarget: '소울메이트 목표', bondMillion: '백만 토큰', bondPreviewState: '미리보기 · 남은 배터리', bondReadError: '토큰 기록을 읽지 못했어요. 다음 조회에서 다시 시도해요.',
+    bondLocked: '잠김', bondUnlockAt: '{n} 토큰에서 해금', bondAuto: '최신 모습 자동',
+    bondPaused: '비활성화 중 · 관계도는 그대로 보관해요.', bondManual: '직접 입력은 관계도에 반영하지 않아요.',
+    bondNeedsData: '이 PC에서 Claude Code 또는 Codex를 사용하면 토큰 기록이 연결돼요.', bondEvolved: '{service} 친구와 {stage} 달성! 새 모습이 열렸어요.',
+  },
+  en: {
+    bondCollection: '♡ Friendship · design collection', bondActive: 'Active',
+    bond_acquaintance: 'Acquaintance', bond_friend: 'Friend', bond_close: 'Close', bond_best: 'Best friend', bond_soulmate: 'Soulmate',
+    bondHelp: 'Usage grows the active friends in your current theme. Each theme has its own progress. Select any unlocked look again. Growth continues in mini mode and the tray while the app is running.',
+    bondCalibration: 'Growth uses actual input/output tokens, including cache, recorded in Claude Code and Codex logs on this PC. Web conversations and other devices are excluded. The default goal is 30 million tokens: a game estimate of 1 million/day for 30 days, not a fixed Pro entitlement. Adjust it to your usage. Previously unlocked looks are kept; actual token progress starts with new usage.',
+    bondNext: '{n} tokens to {stage}', bondComplete: 'Every look unlocked ♡', bondPoints: 'tokens',
+    bondTarget: 'Soulmate goal', bondMillion: 'million tokens', bondPreviewState: 'Preview · battery left', bondReadError: 'Could not read token logs. Retrying next time.',
+    bondLocked: 'Locked', bondUnlockAt: 'Unlocks at {n} tokens', bondAuto: 'Auto: latest look',
+    bondPaused: 'Paused · your progress is kept.', bondManual: 'Manual input does not earn bond points.',
+    bondNeedsData: 'Use Claude Code or Codex on this PC to connect token logs.', bondEvolved: '{service}: {stage} reached! A new look is unlocked.',
+  },
+  ja: {
+    bondCollection: '♡ 友達の関係・デザイン', bondActive: '有効',
+    bond_acquaintance: '知り合い', bond_friend: '友達', bond_close: '親しい友達', bond_best: '親友', bond_soulmate: 'ソウルメイト',
+    bondHelp: '現在のテーマで有効な友達に使用量がたまります。テーマごとに成長を保存し、獲得した姿を再選択できます。起動中はミニモードやトレイでも成長します。',
+    bondCalibration: 'このPCのClaude Code・Codexログに記録された入力・出力トークン（キャッシュ含む）で成長します。Web会話や他の端末は含みません。初期目標は3,000万トークン（1日100万×30日というゲームの目安）で、Proの固定提供量ではありません。目標は変更できます。過去の姿は保持し、新しい使用分から実測トークンを積み立てます。',
+    bondNext: '{stage}まで{n}トークン', bondComplete: 'すべての姿を獲得しました ♡', bondPoints: 'トークン',
+    bondTarget: 'ソウルメイト目標', bondMillion: '百万トークン', bondPreviewState: 'プレビュー・電池残量', bondReadError: 'ログを読み取れません。次回再試行します。',
+    bondLocked: '未獲得', bondUnlockAt: '{n}トークンで獲得', bondAuto: '最新の姿を自動選択',
+    bondPaused: '休止中・成長は保存されます。', bondManual: '手動入力は成長に反映しません。',
+    bondNeedsData: 'このPCでClaude CodeかCodexを使うとログがつながります。', bondEvolved: '{service}と{stage}を達成！新しい姿を獲得しました。',
+  },
+  zh: {
+    bondCollection: '♡ 好友关系 · 外观收藏', bondActive: '启用',
+    bond_acquaintance: '相识', bond_friend: '朋友', bond_close: '亲密', bond_best: '挚友', bond_soulmate: '灵魂伴侣',
+    bondHelp: '使用会增加当前主题中已启用好友的关系值。每个主题独立保存成长，可随时选择已解锁外观。应用运行时，迷你模式和托盘也会积累。',
+    bondCalibration: '根据此电脑Claude Code和Codex日志记录的实际输入输出令牌（含缓存）成长，不含网页对话和其他设备。默认目标为3000万令牌（每天100万×30天的游戏估计），不是Pro固定额度。可按自己的用量修改目标。保留旧外观，从新的使用量开始积累实际令牌。',
+    bondNext: '距{stage}还需{n}令牌', bondComplete: '所有外观已解锁 ♡', bondPoints: '令牌',
+    bondTarget: '灵魂伴侣目标', bondMillion: '百万令牌', bondPreviewState: '预览 · 电量', bondReadError: '无法读取日志，下次重试。',
+    bondLocked: '未解锁', bondUnlockAt: '{n}令牌解锁', bondAuto: '自动使用最新外观',
+    bondPaused: '已暂停 · 保留成长。', bondManual: '手动输入不增加关系值。',
+    bondNeedsData: '在此电脑使用Claude Code或Codex即可连接日志。', bondEvolved: '{service}达到{stage}！新外观已解锁。',
+  },
+  es: {
+    bondCollection: '♡ Amistad · colección de diseños', bondActive: 'Activo',
+    bond_acquaintance: 'Conocido', bond_friend: 'Amigo', bond_close: 'Cercano', bond_best: 'Mejor amigo', bond_soulmate: 'Alma gemela',
+    bondHelp: 'El uso hace crecer a los amigos activos del tema actual. Cada tema guarda su progreso. Puedes volver a elegir cualquier diseño desbloqueado. También crecen en modo mini y en la bandeja mientras la app está abierta.',
+    bondCalibration: 'Se cuentan tokens reales de entrada/salida, incluida la caché, de los registros locales de Claude Code y Codex. No incluye conversaciones web ni otros dispositivos. La meta inicial es 30 millones (estimación de juego: 1 millón/día × 30 días), no una cuota fija de Pro. Puedes ajustarla. Se conservan los diseños anteriores y se cuentan los tokens nuevos.',
+    bondNext: '{n} tokens hasta {stage}', bondComplete: 'Todos los diseños desbloqueados ♡', bondPoints: 'tokens',
+    bondTarget: 'Meta de alma gemela', bondMillion: 'millones de tokens', bondPreviewState: 'Vista previa · batería', bondReadError: 'No se pudieron leer los registros. Se reintentará.',
+    bondLocked: 'Bloqueado', bondUnlockAt: 'Se desbloquea con {n} tokens', bondAuto: 'Último diseño automático',
+    bondPaused: 'En pausa · se conserva el progreso.', bondManual: 'La entrada manual no suma puntos.',
+    bondNeedsData: 'Usa Claude Code o Codex en este PC para conectar los registros.', bondEvolved: '¡{service}: {stage}! Nuevo diseño desbloqueado.',
+  },
+};
+for (const lang of Object.keys(I18N_BOND)) Object.assign(I18N[lang], I18N_BOND[lang]);

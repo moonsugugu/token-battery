@@ -213,16 +213,25 @@ function uniqueIds(svg) {
   return svg.replace(/id="([^"]+)"/g, `id="$1_${n}"`).replace(/url\(#([^)]+)\)/g, `url(#$1_${n})`);
 }
 
-function drawCharacter(theme, svc, state) {
+// Five battery columns; four stages per service, or eight rows for a duo.
+function usageSprite(theme, svc, state, rank = 0) {
+  rank = Math.max(0, Math.min(4, Math.floor(Number(rank) || 0)));
   const safeTheme = CAST[theme] ? theme : 'cyber';
   const safeSvc = svc === 'codex' ? 'codex' : 'claude';
   const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
-  return `<span class="artchar artchar-${safeTheme} artchar-${safeSvc} st-${safeState}" aria-hidden="true"><span class="usage-sprite st-${safeState}" style="--sprite-image:url('crew-animation/${safeTheme}-${safeSvc}.png')"></span></span>`;
+  const separate = ['engine', 'industrial'].includes(safeTheme);
+  const rows = separate ? 4 : 8;
+  const row = (separate ? 0 : safeSvc === 'codex' ? 4 : 0) + rank - 1;
+  const image = rank ? `crew-evolution/${safeTheme}${separate ? '-' + safeSvc : ''}.png` : `crew-animation/${safeTheme}-${safeSvc}.png`;
+  return `<span class="usage-sprite ${rank ? 'evolution-sprite' : ''} st-${safeState}" style="--sprite-image:url('${image}');--sprite-rows:${rows * 100}%;--sprite-row:${row * 100 / (rows - 1)}%"></span>`;
 }
 
-function drawHeroSprite(theme, svc, state) {
+function drawCharacter(theme, svc, state, _color, rank = 0) {
   const safeTheme = CAST[theme] ? theme : 'cyber';
   const safeSvc = svc === 'codex' ? 'codex' : 'claude';
-  const safeState = ['fresh', 'ok', 'tired', 'dizzy', 'sleep', 'none'].includes(state) ? state : 'none';
-  return `<span class="stage-sprite usage-sprite st-${safeState}" style="--sprite-image:url('crew-animation/${safeTheme}-${safeSvc}.png')" aria-hidden="true"></span>`;
+  return `<span class="artchar artchar-${safeTheme} artchar-${safeSvc} bond-skin-${rank}" aria-hidden="true">${usageSprite(safeTheme, safeSvc, state, rank)}</span>`;
+}
+
+function drawHeroSprite(theme, svc, state, rank = 0) {
+  return `<span class="stage-sprite bond-skin-${rank}" aria-hidden="true">${usageSprite(theme, svc, state, rank)}</span>`;
 }
