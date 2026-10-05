@@ -859,15 +859,22 @@ function createWindow() {
   win.on('moved', remember);
   win.on('resized', remember);
   win.webContents.on('context-menu', () => { if (store.mode === 'taskbar') trayMenu?.popup({ window: win }); });
+  for (const event of ['show', 'restore', 'blur']) win.on(event, () => setImmediate(raiseTaskbar));
   applyWindowMode();
 }
 
 let taskbarLayout = null, taskbarProbe = null, taskbarTimer = null;
 let taskbarSize = { width: 172, height: 40 };
+function raiseTaskbar() {
+  if (!win || win.isDestroyed() || store.mode !== 'taskbar' || !win.isVisible() || win.isMinimized()) return;
+  // Explorer can raise its own topmost taskbar after ours; moveTop does not take focus.
+  win.moveTop();
+}
 function placeTaskbar() {
   if (!win || win.isDestroyed() || store.mode !== 'taskbar') return;
   const display = taskbarLayout?.bar ? screen.getDisplayMatching(taskbarLayout.bar) : screen.getPrimaryDisplay();
   win.setBounds(taskbarBounds(display, taskbarSize.width, taskbarSize.height, taskbarLayout));
+  raiseTaskbar();
 }
 async function refreshTaskbarLayout() {
   if (process.platform !== 'win32' || process.env.WIDGET_SNAPSHOT || taskbarProbe) return taskbarProbe;
@@ -876,8 +883,8 @@ async function refreshTaskbarLayout() {
       const script = await fs.readFile(path.join(__dirname, 'tools', 'taskbar-layout.ps1'), 'utf8');
       const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { windowsHide: true, timeout: 10000, maxBuffer: 32768 });
       const layout = JSON.parse(stdout.trim());
-      taskbarLayout = { bar: layout.bar ? screen.screenToDipRect(null, layout.bar) : null, notify: layout.notify ? screen.screenToDipRect(null, layout.notify) : null };
-    } catch { taskbarLayout = null; }
+      if (layout.bar) taskbarLayout = { bar: screen.screenToDipRect(null, layout.bar), notify: layout.notify ? screen.screenToDipRect(null, layout.notify) : null };
+    } catch { /* Keep the last known placement if Explorer is temporarily unavailable. */ }
     placeTaskbar();
   })().finally(() => { taskbarProbe = null; });
   return taskbarProbe;
@@ -886,6 +893,7 @@ function applyWindowMode(previous) {
   if (!win || win.isDestroyed()) return;
   const docked = store.mode === 'taskbar';
   win.setSkipTaskbar(docked);
+  win.setAlwaysOnTop(true, 'screen-saver');
   if (docked) { placeTaskbar(); refreshTaskbarLayout(); }
   else if (previous === 'taskbar') {
     const { workArea } = screen.getPrimaryDisplay();
@@ -1045,6 +1053,7 @@ ipcMain.handle('win:fitSize', (_e, w, h, anchor) => {
 let near = false;
 setInterval(() => {
   if (!win || win.isDestroyed() || !win.isVisible()) return;
+  raiseTaskbar();
   const p = screen.getCursorScreenPoint();
   const b = win.getBounds();
   const m = 18;

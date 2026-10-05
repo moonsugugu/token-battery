@@ -32,7 +32,7 @@ npm install
 npx electron .
 ```
 
-설치파일을 만들려면 아래 명령을 실행하세요. 결과물은 `dist/TokenBattery Setup 1.3.0.exe`입니다.
+설치파일을 만들려면 아래 명령을 실행하세요. 결과물은 `dist/TokenBattery Setup 1.3.1.exe`입니다.
 
 ```bash
 npm run dist

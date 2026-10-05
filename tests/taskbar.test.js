@@ -5,6 +5,22 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { taskbarBounds } = require('../taskbar');
 
+test('taskbar stacking recovers without activating or showing a deliberately hidden window', () => {
+  const source = fs.readFileSync(path.join(__dirname, '../main.js'), 'utf8');
+  const calls = [];
+  let visible = true, minimized = false;
+  const win = { isDestroyed: () => false, isVisible: () => visible, isMinimized: () => minimized, moveTop: () => calls.push('raise') };
+  const context = vm.createContext({ win, store: { mode: 'taskbar' } });
+  vm.runInContext(source.slice(source.indexOf('function raiseTaskbar()'), source.indexOf('function placeTaskbar()')), context);
+  vm.runInContext('raiseTaskbar();raiseTaskbar();', context);
+  assert.deepEqual(calls, ['raise', 'raise']);
+  visible = false; vm.runInContext('raiseTaskbar()', context);
+  visible = true; minimized = true; vm.runInContext('raiseTaskbar()', context);
+  minimized = false; vm.runInContext("store.mode='mini';raiseTaskbar()", context);
+  assert.equal(calls.length, 2);
+  assert.ok(source.includes("['show', 'restore', 'blur']"));
+});
+
 test('taskbar rows center beside the notification area and remain visible with auto-hide', () => {
   const display = { bounds: { x: 0, y: 0, width: 2560, height: 1440 }, workArea: { x: 0, y: 0, width: 2560, height: 1392 } };
   const layout = { bar: { x: 0, y: 1392, width: 2560, height: 48 }, notify: { x: 2314, y: 1392, width: 246, height: 48 } };
