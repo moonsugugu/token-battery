@@ -232,6 +232,19 @@ function renderMini() {
   fit();
 }
 
+// One compact row per enabled service; the main process anchors it to the taskbar.
+function renderTaskbar() {
+  if (!store) return;
+  const rows = ['claude', 'codex'].filter(svcOn).map((s) => {
+    const d = svcData(s);
+    const v5 = shown(d?.fiveHour), vw = shown(d?.weekly);
+    const hint = `${SVC[s]} · ${useRemain() ? t('remainLbl') : t('usedLbl')}\n${t('h5')}: ${v5 ?? '–'}% · ${d?.fiveHour ? resetDisplay(d.fiveHour.resetsAt, { date: true }) : '–'}\n${t('wk')}: ${vw ?? '–'}% · ${d?.weekly ? weeklyResetDisplay(d.weekly.resetsAt) : '–'}`;
+    return `<div class="taskbar-row" title="${esc(hint)}"><span class="taskbar-service ${s}"><i></i>${SVC[s]}</span><b style="color:${v5 != null && dangerColor(v5) || 'inherit'}">${v5 ?? '–'}%</b><span class="taskbar-week">${esc(t('weekShort'))} <b style="color:${vw != null && dangerColor(vw) || 'inherit'}">${vw ?? '–'}%</b></span></div>`;
+  });
+  $('taskbarRows').innerHTML = rows.join('') || `<div class="taskbar-empty">${esc(t('turnOn'))}</div>`;
+  fit();
+}
+
 // ---------- 캐릭터 모드 ----------
 const cssVar = (name) => getComputedStyle(document.body).getPropertyValue(name).trim();
 function renderChar() {
@@ -378,6 +391,7 @@ async function refresh() {
     renderUsage();
     renderMini();
     renderChar();
+    renderTaskbar();
     if (!document.activeElement?.matches('[data-token-target]')) renderBondCollection();
     checkAlerts();
     recordHistory();
@@ -673,12 +687,14 @@ function applyLang(lang) {
   fillSelect($('bondPreview'), [['fresh', '100%'], ['ok', '60%'], ['tired', '20%'], ['dizzy', '5%'], ['sleep', '0%']], $('bondPreview').value || 'fresh');
   fillSelect($('themeSel'), THEMES.map((th, i) => [th.id, `${String(i + 1).padStart(2, '0')} ${THEME_NAMES[LANG][i]}`]), store.theme || 'cyber');
   fillSelect($('bgmMood'), MOOD_QUERIES.map(([id], i) => [id, MOOD_NAMES[LANG][i]]), store.bgmLast || 'lofi');
-  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit') });
+  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit'), taskbar: t('taskbarMode'), mini: t('mini'), char: t('charMode'), full: t('expand') });
+  fillSelect($('modeSel'), [['taskbar', t('taskbarMode')], ['mini', t('mini')], ['char', t('charMode')], ['full', t('expand')]], store.mode || 'mini');
   renderSubs();
   renderUsage();
   renderMini();
   renderChar();
   renderBondCollection();
+  renderTaskbar();
   refreshNotificationSettings();
 }
 $('langSel').onchange = async () => { store = await W.setStore({ lang: $('langSel').value }); applyLang(store.lang); };
@@ -699,6 +715,7 @@ function applyOptions() {
   renderUsage();
   renderMini();
   renderChar();
+  renderTaskbar();
   renderBondCollection();
   fit();
 }
@@ -757,17 +774,18 @@ for (const c of document.querySelectorAll('.lvl')) {
   };
 }
 
-// ---------- 창/모드 (mini · char · full) ----------
+// ---------- 창/모드 (taskbar · mini · char · full) ----------
 let mode = 'mini';
-const CARD = { mini: 'miniCard', char: 'charCard', full: 'card' };
+const CARD = { taskbar: 'taskbarCard', mini: 'miniCard', char: 'charCard', full: 'card' };
 let fitAnchor = 'right';
 let fitRequest = 0;
 function fit() {
   const request = ++fitRequest;
   requestAnimationFrame(() => {
     const el = $(CARD[mode]);
-    const width = mode === 'full' ? 392 : el.offsetWidth + 8;
-    W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor).then(async (bounds) => {
+    const width = mode === 'full' ? 392 : el.offsetWidth + (mode === 'taskbar' ? 0 : 8);
+    const height = el.offsetHeight + (mode === 'taskbar' ? 0 : mode === 'full' ? 14 : 8);
+    W.fitSize(width, height, fitAnchor).then(async (bounds) => {
       if (request !== fitRequest) return;
       if (mode === 'full' && bounds?.maxFullCardHeight) {
         const maxHeight = `${bounds.maxFullCardHeight}px`;
@@ -779,14 +797,14 @@ function fit() {
         $('card').style.maxHeight = '';
       }
       if (request !== fitRequest) return;
-      W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor);
+      if (mode !== 'taskbar') W.fitSize(width, el.offsetHeight + (mode === 'full' ? 14 : 8), fitAnchor);
     }).catch(() => {});
   });
 }
 
 // ---------- 크기 조절: 왼쪽/오른쪽 아래 손잡이를 끌면 위젯 전체 배율이 바뀐다 ----------
 const SCALE_MIN = 0.6, SCALE_MAX = 2.5;
-const modeScale = () => Math.min(SCALE_MAX, Math.max(SCALE_MIN, (store.scale || {})[mode] || 1));
+const modeScale = () => mode === 'taskbar' ? 1 : Math.min(SCALE_MAX, Math.max(SCALE_MIN, (store.scale || {})[mode] || 1));
 function applyScale() { W.setZoom(modeScale()); fit(); }
 for (const g of document.querySelectorAll('.grip')) {
   g.addEventListener('pointerdown', (e) => {
@@ -836,16 +854,22 @@ W.onNear((v) => document.body.classList.toggle('near', v));
 document.fonts.ready.then(() => fit());
 document.fonts.addEventListener('loadingdone', () => fit());
 function setMode(m) {
-  mode = ['mini', 'char', 'full'].includes(m) ? m : 'mini';
-  for (const x of ['mini', 'char', 'full']) document.body.classList.toggle('mode-' + x, x === mode);
+  mode = ['taskbar', 'mini', 'char', 'full'].includes(m) ? m : 'mini';
+  for (const x of ['taskbar', 'mini', 'char', 'full']) document.body.classList.toggle('mode-' + x, x === mode);
   const patch = { mode };
   if (mode !== 'full') patch.compactMode = mode;
   store = { ...store, ...patch };
   W.setStore(patch);
+  $('modeSel').value = mode;
+  if (mode === 'taskbar') renderTaskbar();
   if (mode === 'char') renderChar();
   applyScale();
 }
-const compactMode = () => (store.compactMode === 'char' ? 'char' : 'mini');
+const compactMode = () => ['taskbar', 'char'].includes(store.compactMode) ? store.compactMode : 'mini';
+$('modeSel').onchange = () => setMode($('modeSel').value);
+W.onMode(setMode);
+$('taskbarCard').addEventListener('dblclick', () => setMode('full'));
+$('taskbarCard').addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setMode('full'); } });
 async function openSettings() {
   setMode('full');
   $('settings').classList.remove('hidden');
@@ -927,7 +951,8 @@ for (const b of document.querySelectorAll('.hk')) {
 }
 W.onHotkey((name, wasVisible) => {
   if (name === 'toggle') {
-    if (!wasVisible) setMode('mini');
+    if (!wasVisible) setMode('taskbar');
+    else if (mode === 'taskbar') setMode('mini');
     else if (mode === 'mini') setMode('char');
     else if (mode === 'char') setMode('full');
     else W.hide();
@@ -1010,6 +1035,6 @@ for (const b of document.querySelectorAll('.brand-btn')) b.onclick = (e) => { e.
   renderHotkeys();
   await refresh();
   setInterval(refresh, 60 * 1000); // 1분마다 사용량 갱신
-  setInterval(() => { renderUsage(); renderMini(); renderChar(); }, 20 * 1000); // 남은 시간 카운트다운
+  setInterval(() => { renderUsage(); renderMini(); renderChar(); renderTaskbar(); }, 20 * 1000); // 남은 시간 카운트다운
   setInterval(renderSubs, 30 * 60 * 1000); // 날짜 바뀌면 D-day 갱신
 })();

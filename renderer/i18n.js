@@ -544,6 +544,40 @@ const I18N_CREW = {
 };
 for (const l of Object.keys(I18N_CREW)) Object.assign(I18N[l], I18N_CREW[l]);
 
+const I18N_TASKBAR = {
+  "ko": {
+    "displayMode": "표시 모드",
+    "taskbarMode": "작업표시줄 모드",
+    "taskbarHelp": "더블클릭: 상세 보기 · 오른쪽 클릭: 모드 선택",
+    "hkToggle": "모드 전환 (작업표시줄→미니→캐릭터→전체→끄기)"
+  },
+  "en": {
+    "displayMode": "Display mode",
+    "taskbarMode": "Taskbar mode",
+    "taskbarHelp": "Double-click for details · right-click to choose a mode",
+    "hkToggle": "Cycle modes (taskbar→mini→character→full→off)"
+  },
+  "ja": {
+    "displayMode": "表示モード",
+    "taskbarMode": "タスクバーモード",
+    "taskbarHelp": "ダブルクリックで詳細・右クリックでモード選択",
+    "hkToggle": "モード切替 (タスクバー→ミニ→キャラ→全体→オフ)"
+  },
+  "zh": {
+    "displayMode": "显示模式",
+    "taskbarMode": "任务栏模式",
+    "taskbarHelp": "双击查看详情 · 右键选择模式",
+    "hkToggle": "切换模式 (任务栏→迷你→角色→完整→关闭)"
+  },
+  "es": {
+    "displayMode": "Modo de vista",
+    "taskbarMode": "Modo barra de tareas",
+    "taskbarHelp": "Doble clic para detalles · clic derecho para cambiar modo",
+    "hkToggle": "Cambiar modo (barra→mini→personaje→completo→off)"
+  }
+};
+for (const l of Object.keys(I18N_TASKBAR)) Object.assign(I18N[l], I18N_TASKBAR[l]);
+
 const I18N_BOND = {
   ko: {
     bondCollection: '♡ 친구 관계 · 디자인 보관함', bondActive: '활성화',

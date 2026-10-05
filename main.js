@@ -10,6 +10,7 @@ const { execFile } = require('child_process');
 const { promisify } = require('util');
 const Companions = require('./renderer/companions');
 const { TokenUsage } = require('./token-usage');
+const { taskbarBounds } = require('./taskbar');
 
 const HOME = os.homedir();
 const CODEX_HOME = process.env.CODEX_HOME ? path.resolve(process.env.CODEX_HOME) : path.join(HOME, '.codex');
@@ -854,13 +855,48 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'renderer', 'index.html')).catch((e) => log('load-fail', e.message));
   win.webContents.on('did-finish-load', () => log('renderer loaded'));
 
-  const remember = () => { if (!win.isDestroyed()) { store.bounds = win.getBounds(); saveStore(); } };
+  const remember = () => { if (!win.isDestroyed() && store.mode !== 'taskbar') { store.bounds = win.getBounds(); saveStore(); } };
   win.on('moved', remember);
   win.on('resized', remember);
+  win.webContents.on('context-menu', () => { if (store.mode === 'taskbar') trayMenu?.popup({ window: win }); });
+  applyWindowMode();
 }
 
-let trayLabels = { tip: 'TokenBattery · Claude/Codex limits', toggle: 'Show / Hide', reset: 'Reset position', quit: 'Quit' };
+let taskbarLayout = null, taskbarProbe = null, taskbarTimer = null;
+let taskbarSize = { width: 172, height: 40 };
+function placeTaskbar() {
+  if (!win || win.isDestroyed() || store.mode !== 'taskbar') return;
+  const display = taskbarLayout?.bar ? screen.getDisplayMatching(taskbarLayout.bar) : screen.getPrimaryDisplay();
+  win.setBounds(taskbarBounds(display, taskbarSize.width, taskbarSize.height, taskbarLayout));
+}
+async function refreshTaskbarLayout() {
+  if (process.platform !== 'win32' || process.env.WIDGET_SNAPSHOT || taskbarProbe) return taskbarProbe;
+  taskbarProbe = (async () => {
+    try {
+      const script = await fs.readFile(path.join(__dirname, 'tools', 'taskbar-layout.ps1'), 'utf8');
+      const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { windowsHide: true, timeout: 10000, maxBuffer: 32768 });
+      const layout = JSON.parse(stdout.trim());
+      taskbarLayout = { bar: layout.bar ? screen.screenToDipRect(null, layout.bar) : null, notify: layout.notify ? screen.screenToDipRect(null, layout.notify) : null };
+    } catch { taskbarLayout = null; }
+    placeTaskbar();
+  })().finally(() => { taskbarProbe = null; });
+  return taskbarProbe;
+}
+function applyWindowMode(previous) {
+  if (!win || win.isDestroyed()) return;
+  const docked = store.mode === 'taskbar';
+  win.setSkipTaskbar(docked);
+  if (docked) { placeTaskbar(); refreshTaskbarLayout(); }
+  else if (previous === 'taskbar') {
+    const { workArea } = screen.getPrimaryDisplay();
+    win.setBounds(store.bounds || { x: workArea.x + workArea.width - 266, y: workArea.y + 16, width: 250, height: 120 });
+  }
+  buildTrayMenu();
+}
+let trayMenu = null;
+let trayLabels = { tip: 'TokenBattery · Claude/Codex limits', toggle: 'Show / Hide', reset: 'Reset position', quit: 'Quit', taskbar: 'Taskbar mode', mini: 'Mini mode', char: 'Character mode', full: 'Details' };
 function resetPosition() {
+  if (store.mode === 'taskbar') { placeTaskbar(); refreshTaskbarLayout(); win.showInactive(); return; }
   store.bounds = null;
   saveStore();
   const { workArea } = screen.getPrimaryDisplay();
@@ -870,12 +906,14 @@ function resetPosition() {
 function buildTrayMenu() {
   if (!tray) return;
   tray.setToolTip(trayLabels.tip);
-  tray.setContextMenu(Menu.buildFromTemplate([
+  trayMenu = Menu.buildFromTemplate([
     { label: trayLabels.toggle, click: () => (win.isVisible() ? win.hide() : win.show()) },
+    ...['taskbar', 'mini', 'char', 'full'].map((mode) => ({ label: trayLabels[mode], type: 'radio', checked: store.mode === mode, click: () => { win.showInactive(); win.webContents.send('mode', mode); } })),
     { label: trayLabels.reset, click: resetPosition },
     { type: 'separator' },
     { label: trayLabels.quit, click: () => app.quit() },
-  ]));
+  ]);
+  tray.setContextMenu(trayMenu);
 }
 function createTray() {
   tray = new Tray(nativeImage.createFromPath(TRAY_ICON));
@@ -923,7 +961,11 @@ ipcMain.handle('store:set', (_e, patch) => {
     const key = service === 'claude' ? 'showClaude' : 'showCodex';
     if (key in settings && settings[key] !== store[key]) tokenSince[service] = now;
   }
-  store = { ...store, ...settings }; saveStore(); return store;
+  if ('mode' in settings && !['taskbar', 'mini', 'char', 'full'].includes(settings.mode)) delete settings.mode;
+  const previous = store.mode;
+  store = { ...store, ...settings };
+  if ('mode' in settings) applyWindowMode(previous);
+  saveStore(); return store;
 });
 ipcMain.handle('companions:select', (_e, { theme, service, selected }) => {
   if (!Companions.select(store.companions, theme, service, selected)) throw new Error('This design is locked.');
@@ -983,6 +1025,11 @@ let zoom = 1;
 ipcMain.handle('win:zoom', (_e, z) => { zoom = z; win.webContents.setZoomFactor(z); });
 // anchor: 'right' = 오른쪽 모서리 고정(기본), 'left' = 왼쪽 모서리 고정(오른쪽 아래 손잡이로 키울 때)
 ipcMain.handle('win:fitSize', (_e, w, h, anchor) => {
+  if (!Number.isFinite(w) || !Number.isFinite(h)) return;
+  if (store.mode === 'taskbar') {
+    taskbarSize = { width: Math.max(100, Math.min(220, Math.round(w))), height: Math.max(20, Math.min(46, Math.round(h))) };
+    placeTaskbar(); return;
+  }
   const b = win.getBounds();
   const { workArea } = screen.getDisplayMatching(b);
   const width = Math.min(Math.round(w * zoom), workArea.width);
@@ -1123,6 +1170,7 @@ if (!app.requestSingleInstanceLock()) {
     event.preventDefault();
     quitting = true;
     clearInterval(tokenTimer);
+    clearInterval(taskbarTimer);
     tokenTracker?.close();
     Promise.resolve(tokenRequest).catch((error) => log('token log read failed', error.message)).then(flushStore).finally(() => app.quit());
   });
@@ -1145,6 +1193,11 @@ if (!app.requestSingleInstanceLock()) {
     }
     createWindow();
     createTray();
+    for (const event of ['display-metrics-changed', 'display-added', 'display-removed']) screen.on(event, () => {
+      taskbarLayout = null;
+      if (store.mode === 'taskbar') { placeTaskbar(); refreshTaskbarLayout(); }
+    });
+    taskbarTimer = setInterval(() => { if (store.mode === 'taskbar') refreshTaskbarLayout(); }, 60000);
     registerHotkeys();
     if (store.notifications?.hooksInstalled) startAgentBridge().catch((error) => log('agent bridge start failed', error.message));
     // 개발 확인용: WIDGET_SNAPSHOT=경로 로 실행하면 화면을 캡처하고 종료
@@ -1166,9 +1219,9 @@ if (!app.requestSingleInstanceLock()) {
               claude: { ok: true, source: 'web', updatedAt: Date.now(), fiveHour: w5(u.c5, u.cr5), weekly: w5(u.cw, u.crw) },
               codex: { ok: true, source: 'codex-log', updatedAt: Date.now(), fiveHour: w5(u.x5, u.xr5), weekly: w5(u.xw, u.xrw) },
             };
-            await win.webContents.executeJavaScript(`applyTheme('${step.theme}'); setMode('${step.mode}'); refresh().then(() => { ${step.js || ''} })`);
+            await win.webContents.executeJavaScript(`applyTheme('${step.theme}'); setMode('${step.mode}'); refresh().then(async () => { ${step.js || ''} })`);
             await new Promise((r) => setTimeout(r, step.wait || 900));
-            const sel = step.sel || `#${{ mini: 'miniCard', char: 'charCard', full: 'card' }[step.mode]}`;
+            const sel = step.sel || `#${{ taskbar: 'taskbarCard', mini: 'miniCard', char: 'charCard', full: 'card' }[step.mode]}`;
             const info = await win.webContents.executeJavaScript(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); const r = el.getBoundingClientRect();
               return { x: r.x, y: r.y, w: r.width, h: r.height, radius: parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, dpr: window.devicePixelRatio }; })()`);
             const shot = await win.webContents.capturePage();
@@ -1180,11 +1233,11 @@ if (!app.requestSingleInstanceLock()) {
           }
           await fs.writeFile(path.join(spec.outDir, 'meta.json'), JSON.stringify(meta, null, 2));
         }
-        // WIDGET_SNAPSHOT_ALL=폴더 → 모든 테마 × (미니/자세히)를 차례로 캡처
+        // WIDGET_SNAPSHOT_ALL=폴더 → 모든 테마 × 네 모드를 차례로 캡처
         if (process.env.WIDGET_SNAPSHOT_ALL) {
           const ids = await win.webContents.executeJavaScript('THEMES.map((t) => t.id)');
           for (const id of ids) {
-            for (const mode of ['mini', 'char', 'full']) {
+            for (const mode of ['taskbar', 'mini', 'char', 'full']) {
               await win.webContents.executeJavaScript(`applyTheme('${id}'); setMode('${mode}');`);
               await new Promise((r) => setTimeout(r, 900));
               const shot = await win.webContents.capturePage();

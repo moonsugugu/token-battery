@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('widget', {
   fitSize: (w, h, anchor) => ipcRenderer.invoke('win:fitSize', w, h, anchor),
   setZoom: (z) => ipcRenderer.invoke('win:zoom', z),
   onNear: (cb) => ipcRenderer.on('near', (_e, v) => cb(v)),
+  onMode: (cb) => ipcRenderer.on('mode', (_e, mode) => cb(mode)),
   autostart: (on) => ipcRenderer.invoke('app:autostart', on),
   onRefresh: (cb) => ipcRenderer.on('refresh-now', cb),
   onNotificationStatus: (cb) => ipcRenderer.on('notify:status', (_e, status) => cb(status)),
