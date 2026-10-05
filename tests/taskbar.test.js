@@ -10,10 +10,11 @@ test('taskbar stacking recovers without activating or showing a deliberately hid
   const calls = [];
   let visible = true, minimized = false;
   const win = { isDestroyed: () => false, isVisible: () => visible, isMinimized: () => minimized, moveTop: () => calls.push('raise') };
-  const context = vm.createContext({ win, store: { mode: 'taskbar' } });
+  const context = vm.createContext({ win, store: { mode: 'taskbar' }, taskbarMenuOpen: false });
   vm.runInContext(source.slice(source.indexOf('function raiseTaskbar()'), source.indexOf('function placeTaskbar()')), context);
   vm.runInContext('raiseTaskbar();raiseTaskbar();', context);
   assert.deepEqual(calls, ['raise', 'raise']);
+  vm.runInContext('taskbarMenuOpen=true;raiseTaskbar();taskbarMenuOpen=false;', context);
   visible = false; vm.runInContext('raiseTaskbar()', context);
   visible = true; minimized = true; vm.runInContext('raiseTaskbar()', context);
   minimized = false; vm.runInContext("store.mode='mini';raiseTaskbar()", context);

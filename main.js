@@ -865,8 +865,9 @@ function createWindow() {
 
 let taskbarLayout = null, taskbarProbe = null, taskbarTimer = null;
 let taskbarSize = { width: 172, height: 40 };
+let taskbarMenuOpen = false;
 function raiseTaskbar() {
-  if (!win || win.isDestroyed() || store.mode !== 'taskbar' || !win.isVisible() || win.isMinimized()) return;
+  if (!win || win.isDestroyed() || taskbarMenuOpen || store.mode !== 'taskbar' || !win.isVisible() || win.isMinimized()) return;
   // Explorer can raise its own topmost taskbar after ours; moveTop does not take focus.
   win.moveTop();
 }
@@ -921,6 +922,8 @@ function buildTrayMenu() {
     { type: 'separator' },
     { label: trayLabels.quit, click: () => app.quit() },
   ]);
+  trayMenu.on('menu-will-show', () => { taskbarMenuOpen = true; });
+  trayMenu.on('menu-will-close', () => { taskbarMenuOpen = false; setImmediate(raiseTaskbar); });
   tray.setContextMenu(trayMenu);
 }
 function createTray() {
