@@ -544,6 +544,30 @@ const I18N_CREW = {
 };
 for (const l of Object.keys(I18N_CREW)) Object.assign(I18N[l], I18N_CREW[l]);
 
+const I18N_UPDATES = {
+  ko: {
+    updateTitle: '앱 업데이트', updateView: '업데이트 보기', updateCheck: '업데이트 확인', updateDownload: '새 버전 다운로드', updateInstall: '재시작하고 설치', updateReleases: '릴리스 보기',
+    updateIdle: '새 버전은 자동으로 확인해요.', updateChecking: '새 버전 확인 중…', updateCurrent: '최신 버전을 사용하고 있어요.', updateAvailable: '새 버전 v{v}이 나왔어요.', updateDownloading: '다운로드 중… {n}%', updateDownloaded: 'v{v} 설치 준비 완료. 재시작하면 업데이트돼요.', updateInstalling: '저장 후 재시작하고 설치하는 중…', updateDisabled: '자동 업데이트는 Windows 설치판에서 사용할 수 있어요.', updateError: '업데이트에 실패했어요. 다시 시도하거나 릴리스에서 설치 파일을 받아주세요.', updateHelp: '시작할 때와 6시간마다 확인해요. 다운로드 후 원하는 때 재시작해 설치할 수 있어요. 설정과 친구 성장 기록은 유지돼요.',
+  },
+  en: {
+    updateTitle: 'App updates', updateView: 'View update', updateCheck: 'Check for updates', updateDownload: 'Download update', updateInstall: 'Restart and install', updateReleases: 'View releases',
+    updateIdle: 'New versions are checked automatically.', updateChecking: 'Checking for updates…', updateCurrent: 'You are up to date.', updateAvailable: 'Version {v} is available.', updateDownloading: 'Downloading… {n}%', updateDownloaded: 'Version {v} is ready. Restart to install.', updateInstalling: 'Saving, restarting and installing…', updateDisabled: 'Automatic updates are available in the Windows installed app.', updateError: 'Update failed. Try again or download the installer from Releases.', updateHelp: 'Checks at startup and every 6 hours. Download, then restart when convenient to install. Settings and companion progress are kept.',
+  },
+  ja: {
+    updateTitle: 'アプリの更新', updateView: '更新を見る', updateCheck: '更新を確認', updateDownload: '更新をダウンロード', updateInstall: '再起動してインストール', updateReleases: 'リリースを見る',
+    updateIdle: '新しいバージョンを自動確認します。', updateChecking: '更新を確認中…', updateCurrent: '最新バージョンです。', updateAvailable: 'v{v} が利用できます。', updateDownloading: 'ダウンロード中… {n}%', updateDownloaded: 'v{v} の準備完了。再起動してインストール。', updateInstalling: '保存して再起動・インストール中…', updateDisabled: '自動更新は Windows のインストール版で利用できます。', updateError: '更新に失敗しました。再試行するかリリースからインストーラーを取得してください。', updateHelp: '起動時と6時間ごとに確認します。ダウンロード後、都合のよい時に再起動してください。設定と成長記録は維持されます。',
+  },
+  zh: {
+    updateTitle: '应用更新', updateView: '查看更新', updateCheck: '检查更新', updateDownload: '下载更新', updateInstall: '重启并安装', updateReleases: '查看发布',
+    updateIdle: '自动检查新版本。', updateChecking: '正在检查更新…', updateCurrent: '已是最新版本。', updateAvailable: '新版本 v{v} 已发布。', updateDownloading: '正在下载… {n}%', updateDownloaded: 'v{v} 已准备好。重启以安装。', updateInstalling: '正在保存、重启并安装…', updateDisabled: '自动更新适用于 Windows 安装版。', updateError: '更新失败。请重试或从发布页面下载安装程序。', updateHelp: '启动时及每6小时检查。下载后可在方便时重启安装。设置和伙伴成长记录将保留。',
+  },
+  es: {
+    updateTitle: 'Actualizaciones', updateView: 'Ver actualización', updateCheck: 'Buscar actualizaciones', updateDownload: 'Descargar actualización', updateInstall: 'Reiniciar e instalar', updateReleases: 'Ver versiones',
+    updateIdle: 'Las versiones nuevas se buscan automáticamente.', updateChecking: 'Buscando actualizaciones…', updateCurrent: 'Tienes la última versión.', updateAvailable: 'La versión {v} está disponible.', updateDownloading: 'Descargando… {n}%', updateDownloaded: 'Versión {v} lista. Reinicia para instalar.', updateInstalling: 'Guardando, reiniciando e instalando…', updateDisabled: 'Las actualizaciones automáticas están disponibles en la app instalada de Windows.', updateError: 'La actualización falló. Reintenta o descarga el instalador desde las versiones.', updateHelp: 'Se comprueba al iniciar y cada 6 horas. Descarga y reinicia cuando quieras. Se conservan los ajustes y el progreso.',
+  },
+};
+for (const l of Object.keys(I18N_UPDATES)) Object.assign(I18N[l], I18N_UPDATES[l]);
+
 const I18N_TASKBAR = {
   "ko": {
     "displayMode": "표시 모드",

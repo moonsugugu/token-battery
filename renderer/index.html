@@ -68,7 +68,22 @@
   </header>
 
   <!-- 설정 -->
+  <section class="update-banner hidden" id="updateBanner" aria-live="polite">
+    <span id="updateBannerText"></span><button class="chip" id="btnUpdateBanner" data-i18n="updateView"></button>
+  </section>
   <section class="panel settings hidden" id="settings">
+    <section class="update-panel" id="updatePanel">
+      <div class="row"><b data-i18n="updateTitle"></b><span class="smeta" id="appVersion"></span></div>
+      <p class="note" id="updateStatus" role="status" aria-live="polite"></p>
+      <progress id="updateProgress" max="100" value="0" class="hidden" data-i18n-aria-label="updateDownloading"></progress>
+      <div class="row wrap">
+        <button class="chip" id="btnCheckUpdate" data-i18n="updateCheck"></button>
+        <button class="chip hidden" id="btnDownloadUpdate" data-i18n="updateDownload"></button>
+        <button class="chip hidden" id="btnInstallUpdate" data-i18n="updateInstall"></button>
+        <button class="chip ghost" id="btnUpdateReleases" data-i18n="updateReleases"></button>
+      </div>
+      <p class="note" data-i18n="updateHelp"></p>
+    </section>
     <label class="row"><span data-i18n="lang"></span> <select id="langSel"></select></label>
     <label class="row"><span data-i18n="theme"></span> <select id="themeSel"></select></label>
     <label class="row"><span data-i18n="displayMode"></span> <select id="modeSel"></select></label>
@@ -273,5 +288,6 @@
 <script src="companions.js"></script>
 <script src="characters.js"></script>
 <script src="app.js"></script>
+<script src="updates-ui.js"></script>
 </body>
 </html>

@@ -1,0 +1,64 @@
+name: Windows release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing stable version tag (e.g. v1.3.2)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Verify stable tag matches app version
+        run: node tools/verify-release.cjs
+      - run: npm ci
+      - run: npm test
+      - name: Build installer and update metadata
+        run: npm run dist -- --publish never
+      - name: Verify release artifacts
+        run: node tools/verify-release.cjs --artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TokenBattery-${{ env.RELEASE_TAG }}
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/latest.yml
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Upload complete release before publishing
+        shell: pwsh
+        run: |
+          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --draft --title "TokenBattery $env:RELEASE_TAG" --generate-notes
+            if ($LASTEXITCODE -ne 0) { throw 'Could not create release' }
+          }
+          $releaseFiles = @(Get-ChildItem -LiteralPath dist -File | Where-Object { $_.Name -match '\.(exe|blockmap)$' -or $_.Name -in @('latest.yml', 'SHA256SUMS.txt') } | ForEach-Object { $_.FullName })
+          gh release upload $env:RELEASE_TAG @releaseFiles --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Could not upload release artifacts' }
+          gh release edit $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish release' }

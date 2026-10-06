@@ -11,6 +11,7 @@ const { promisify } = require('util');
 const Companions = require('./renderer/companions');
 const { TokenUsage } = require('./token-usage');
 const { taskbarBounds } = require('./taskbar');
+const { createUpdater } = require('./updater');
 
 const HOME = os.homedir();
 const CODEX_HOME = process.env.CODEX_HOME ? path.resolve(process.env.CODEX_HOME) : path.join(HOME, '.codex');
@@ -42,6 +43,51 @@ let bridgeToken = null;
 let pendingKakaoState = null;
 let activeAgentWork = new Map();
 let lastNotifyResult = { ok: true, message: '' };
+let updates = null;
+let updateInstalling = false;
+
+function showUpdates() {
+  if (!win || win.isDestroyed()) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+  win.webContents.send('updates:open');
+}
+
+function startUpdates() {
+  const enabled = app.isPackaged && process.platform === 'win32' && !process.env.WIDGET_SNAPSHOT;
+  updates = createUpdater({
+    updater: enabled ? require('electron-updater').autoUpdater : null,
+    version: app.getVersion(), enabled, log,
+    onState: (state) => {
+      if (state.status === 'error') updateInstalling = false;
+      if (win && !win.isDestroyed()) win.webContents.send('updates:state', state);
+      buildTrayMenu();
+    },
+    notify: (version, downloaded) => {
+      if (!Notification.isSupported()) return;
+      const messages = {
+        ko: downloaded ? `v${version} 다운로드 완료. 눌러서 재시작하고 설치하세요.` : `새 버전 v${version}이 나왔어요. 눌러서 업데이트하세요.`,
+        en: downloaded ? `v${version} is ready. Click to restart and install.` : `v${version} is available. Click to update.`,
+        ja: downloaded ? `v${version} の準備ができました。クリックして再起動・インストール。` : `新しい v${version} があります。クリックして更新。`,
+        zh: downloaded ? `v${version} 已下载。点击以重启并安装。` : `新版本 v${version} 已发布。点击更新。`,
+        es: downloaded ? `v${version} está lista. Pulsa para reiniciar e instalar.` : `v${version} disponible. Pulsa para actualizar.`,
+      };
+      const notification = new Notification({ title: 'TokenBattery', body: messages[store.lang] || messages.en, icon: ICON });
+      notification.on('click', showUpdates);
+      notification.show();
+    },
+    beforeInstall: async () => {
+      clearInterval(tokenTimer);
+      clearInterval(taskbarTimer);
+      tokenTracker?.close();
+      await Promise.resolve(tokenRequest).catch((error) => log('token log read failed', error.message));
+      await flushStore();
+      updateInstalling = true;
+    },
+  });
+  updates.start();
+}
 
 // ---------- 설정 저장소 ----------
 const storePath = () => path.join(app.getPath('userData'), 'widget-store.json');
@@ -920,6 +966,8 @@ function buildTrayMenu() {
     ...['taskbar', 'mini', 'char', 'full'].map((mode) => ({ label: trayLabels[mode], type: 'radio', checked: store.mode === mode, click: () => { win.showInactive(); win.webContents.send('mode', mode); } })),
     { label: trayLabels.reset, click: resetPosition },
     { type: 'separator' },
+    { label: trayLabels.update || 'Check for updates', click: () => { showUpdates(); updates?.check(); } },
+    { type: 'separator' },
     { label: trayLabels.quit, click: () => app.quit() },
   ]);
   trayMenu.on('menu-will-show', () => { taskbarMenuOpen = true; });
@@ -933,6 +981,10 @@ function createTray() {
 }
 
 // ---------- IPC ----------
+ipcMain.handle('updates:get', () => updates?.getState());
+ipcMain.handle('updates:check', () => updates?.check());
+ipcMain.handle('updates:download', () => updates?.download());
+ipcMain.handle('updates:install', () => updates?.install());
 let fakeUsage = null; // 개발용 캡처(WIDGET_SNAPSHOT_STEPS)에서만 사용
 let usageRequest = null;
 let tokenRequest = null;
@@ -1093,6 +1145,7 @@ ipcMain.handle('hotkeys:set', (_e, hk) => { store.hotkeys = hk; saveStore(); ret
 ipcMain.handle('hotkeys:suspend', () => globalShortcut.unregisterAll());
 ipcMain.handle('hotkeys:status', () => hotkeyStatus);
 app.on('will-quit', () => {
+  updates?.stop();
   // 준비 전(중복 실행으로 바로 종료할 때 등)에는 globalShortcut을 쓸 수 없다
   if (app.isReady()) globalShortcut.unregisterAll();
   if (bridgeServer) bridgeServer.close();
@@ -1178,7 +1231,7 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   let quitting = false;
   app.on('before-quit', (event) => {
-    if (quitting || !store) return;
+    if (quitting || !store || updateInstalling) return;
     event.preventDefault();
     quitting = true;
     clearInterval(tokenTimer);
@@ -1205,6 +1258,7 @@ if (!app.requestSingleInstanceLock()) {
     }
     createWindow();
     createTray();
+    startUpdates();
     for (const event of ['display-metrics-changed', 'display-added', 'display-removed']) screen.on(event, () => {
       taskbarLayout = null;
       if (store.mode === 'taskbar') { placeTaskbar(); refreshTaskbarLayout(); }

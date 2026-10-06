@@ -687,7 +687,7 @@ function applyLang(lang) {
   fillSelect($('bondPreview'), [['fresh', '100%'], ['ok', '60%'], ['tired', '20%'], ['dizzy', '5%'], ['sleep', '0%']], $('bondPreview').value || 'fresh');
   fillSelect($('themeSel'), THEMES.map((th, i) => [th.id, `${String(i + 1).padStart(2, '0')} ${THEME_NAMES[LANG][i]}`]), store.theme || 'cyber');
   fillSelect($('bgmMood'), MOOD_QUERIES.map(([id], i) => [id, MOOD_NAMES[LANG][i]]), store.bgmLast || 'lofi');
-  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit'), taskbar: t('taskbarMode'), mini: t('mini'), char: t('charMode'), full: t('expand') });
+  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit'), taskbar: t('taskbarMode'), mini: t('mini'), char: t('charMode'), full: t('expand'), update: t('updateCheck') });
   fillSelect($('modeSel'), [['taskbar', t('taskbarMode')], ['mini', t('mini')], ['char', t('charMode')], ['full', t('expand')]], store.mode || 'mini');
   renderSubs();
   renderUsage();
@@ -695,6 +695,7 @@ function applyLang(lang) {
   renderChar();
   renderBondCollection();
   renderTaskbar();
+  window.renderUpdates?.();
   refreshNotificationSettings();
 }
 $('langSel').onchange = async () => { store = await W.setStore({ lang: $('langSel').value }); applyLang(store.lang); };
@@ -876,6 +877,7 @@ async function openSettings() {
   $('autostart').checked = await W.autostart();
   renderHotkeys();
   refreshNotificationSettings();
+  window.renderUpdates?.();
   fit();
 }
 document.addEventListener('click', (e) => {
@@ -892,6 +894,7 @@ $('btnRefresh').onclick = refresh;
 $('btnSettings').onclick = async () => {
   if ($('settings').classList.contains('hidden')) return openSettings();
   $('settings').classList.add('hidden');
+  window.renderUpdates?.();
   fit();
 };
 for (const d of document.querySelectorAll('details.fold')) d.addEventListener('toggle', fit);

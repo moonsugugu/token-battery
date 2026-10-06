@@ -1,6 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('widget', {
+  getUpdateState: () => ipcRenderer.invoke('updates:get'),
+  checkForUpdates: () => ipcRenderer.invoke('updates:check'),
+  downloadUpdate: () => ipcRenderer.invoke('updates:download'),
+  installUpdate: () => ipcRenderer.invoke('updates:install'),
+  onUpdateState: (cb) => ipcRenderer.on('updates:state', (_e, state) => cb(state)),
+  onOpenUpdates: (cb) => ipcRenderer.on('updates:open', cb),
   getUsage: () => ipcRenderer.invoke('usage:get'),
   getStore: () => ipcRenderer.invoke('store:get'),
   setStore: (patch) => ipcRenderer.invoke('store:set', patch),
