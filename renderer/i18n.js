@@ -748,3 +748,4 @@ const I18N_TUTORIAL = {
   },
 };
 for (const lang of Object.keys(I18N_TUTORIAL)) Object.assign(I18N[lang], I18N_TUTORIAL[lang]);
+for (const [lang, label] of Object.entries({ ko: '디자인 미리보기', en: 'Design preview', ja: 'デザインプレビュー', zh: '外观预览', es: 'Vista previa del diseño' })) I18N[lang].themePreviewTitle = label;

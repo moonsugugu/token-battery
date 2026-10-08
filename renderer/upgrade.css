@@ -526,6 +526,20 @@ body.mode-taskbar .card.taskbar::before, body.mode-taskbar .card.taskbar::after 
 .theme-anime { --crew-art: url("crew-scenes-static/anime.png"); }
 .theme-editorial { --crew-art: url("crew-scenes-static/editorial.png"); }
 
+/* Show the same selected characters as the widget, directly above the design picker. */
+.theme-preview { margin: 12px 0 10px; }
+.theme-preview > b { display: block; color: var(--muted); font-size: 11px; margin-bottom: 7px; }
+.theme-preview-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.theme-preview-card { margin: 0; min-width: 0; overflow: hidden; border: 1px solid var(--panel-bd); border-radius: var(--pradius); background: var(--panel); }
+.theme-preview-art { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background-image: var(--crew-art); background-size: 200% 100%; background-repeat: no-repeat; background-position: left center; }
+.theme-preview-card.codex .theme-preview-art { background-position: right center; }
+.theme-preview-art .stage-sprite { position: absolute; display: block; inset: 0; }
+.theme-preview-card figcaption { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; padding: 7px 9px; }
+.theme-preview-card.claude figcaption b { color: var(--claude); }
+.theme-preview-card.codex figcaption b { color: var(--codex); }
+.theme-preview-card figcaption span { color: var(--muted); font-size: 10px; }
+.theme-arcade .theme-preview-art, .theme-crt .theme-preview-art { image-rendering: pixelated; }
+
 .card.full .crew {
   --cast-stage-height: 210px;
   position: relative;

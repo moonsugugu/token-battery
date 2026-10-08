@@ -170,8 +170,20 @@ function crewCard(s) {
       <div class="weekly-reset" title="${esc(d?.weekly?.resetsAt ? fmtClock(d.weekly.resetsAt) : '')}">↻ ${t('weekShort')} ${resetWeek}</div>
     </div>`;
 }
+function renderThemePreview() {
+  if (!store) return;
+  const theme = store.theme || 'cyber';
+  $('themePreview').innerHTML = ['claude', 'codex'].map((service) => {
+    const friend = bondView(service);
+    const state = charState(svcData(service));
+    const label = `${SVC[service]} · ${bondName(friend.selected)}`;
+    return `<figure class="theme-preview-card ${service}"><div class="theme-preview-art" role="img" aria-label="${esc(label)}">${drawHeroSprite(theme, service, state, friend.selected)}</div><figcaption><b>${SVC[service]}</b><span>${esc(bondName(friend.selected))}</span></figcaption></figure>`;
+  }).join('');
+}
 function renderUsage() {
-  if (!usage || !store) return;
+  if (!store) return;
+  renderThemePreview();
+  if (!usage) return;
   const cards = ['claude', 'codex'].filter(svcOn).map(crewCard);
   $('crew').innerHTML = cards.length ? cards.join('') : `<div class="mneed">${t('turnOn')}</div>`;
   $('crew').classList.toggle('single', cards.length === 1);
