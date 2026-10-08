@@ -687,7 +687,7 @@ function applyLang(lang) {
   fillSelect($('bondPreview'), [['fresh', '100%'], ['ok', '60%'], ['tired', '20%'], ['dizzy', '5%'], ['sleep', '0%']], $('bondPreview').value || 'fresh');
   fillSelect($('themeSel'), THEMES.map((th, i) => [th.id, `${String(i + 1).padStart(2, '0')} ${THEME_NAMES[LANG][i]}`]), store.theme || 'cyber');
   fillSelect($('bgmMood'), MOOD_QUERIES.map(([id], i) => [id, MOOD_NAMES[LANG][i]]), store.bgmLast || 'lofi');
-  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit'), taskbar: t('taskbarMode'), mini: t('mini'), char: t('charMode'), full: t('expand') });
+  W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit'), taskbar: t('taskbarMode'), mini: t('mini'), char: t('charMode'), full: t('expand'), update: t('updateCheck') });
   fillSelect($('modeSel'), [['taskbar', t('taskbarMode')], ['mini', t('mini')], ['char', t('charMode')], ['full', t('expand')]], store.mode || 'mini');
   renderSubs();
   renderUsage();
@@ -695,6 +695,7 @@ function applyLang(lang) {
   renderChar();
   renderBondCollection();
   renderTaskbar();
+  window.renderUpdates?.();
   refreshNotificationSettings();
 }
 $('langSel').onchange = async () => { store = await W.setStore({ lang: $('langSel').value }); applyLang(store.lang); };
@@ -782,11 +783,16 @@ let fitRequest = 0;
 function fit() {
   const request = ++fitRequest;
   requestAnimationFrame(() => {
+    if ($('hotkeySetupDialog').open) {
+      W.fitSize(392, Math.max(340, $('hotkeySetupDialog').scrollHeight + 44), fitAnchor).catch(() => {});
+      return;
+    }
     const el = $(CARD[mode]);
     const width = mode === 'full' ? 392 : el.offsetWidth + (mode === 'taskbar' ? 0 : 8);
     const height = el.offsetHeight + (mode === 'taskbar' ? 0 : mode === 'full' ? 14 : 8);
     W.fitSize(width, height, fitAnchor).then(async (bounds) => {
       if (request !== fitRequest) return;
+      if ($('hotkeySetupDialog').open) { fit(); return; }
       if (mode === 'full' && bounds?.maxFullCardHeight) {
         const maxHeight = `${bounds.maxFullCardHeight}px`;
         if (el.style.maxHeight !== maxHeight) {
@@ -876,6 +882,7 @@ async function openSettings() {
   $('autostart').checked = await W.autostart();
   renderHotkeys();
   refreshNotificationSettings();
+  window.renderUpdates?.();
   fit();
 }
 document.addEventListener('click', (e) => {
@@ -892,13 +899,17 @@ $('btnRefresh').onclick = refresh;
 $('btnSettings').onclick = async () => {
   if ($('settings').classList.contains('hidden')) return openSettings();
   $('settings').classList.add('hidden');
+  window.renderUpdates?.();
   fit();
 };
 for (const d of document.querySelectorAll('details.fold')) d.addEventListener('toggle', fit);
 
-// ---------- 단축키 (기본 F3 미니 켜기/끄기, F4 자세히 모드) ----------
+// ---------- 단축키 (기본 F7 보이기/숨기기, F8 모드 전환) ----------
 let hkStatus = {};
-const DEFAULT_HK = { toggle: 'F3', full: 'F4' };
+const DEFAULT_HK = Hotkeys.defaults;
+let cancelHotkeyCapture = null;
+let hotkeySetupMode = null;
+let tutorialStep = 0;
 function renderHotkeys() {
   const hk = { ...DEFAULT_HK, ...(store.hotkeys || {}) };
   for (const b of document.querySelectorAll('.hk')) {
@@ -906,7 +917,11 @@ function renderHotkeys() {
     b.classList.toggle('bad', hkStatus[b.dataset.hk] === false);
   }
   const plainNow = Object.values(hk).find((a) => a && !a.includes('+') && !/^(F\d{1,2}|Insert|Pause|ScrollLock|PrintScreen|num\d)$/.test(a));
-  $('hkMsg').textContent = Object.values(hkStatus).includes(false) ? t('hkBusy') : plainNow ? t('hkPrintable', { k: plainNow }) : '';
+  setHotkeyMessage(Object.values(hkStatus).includes(false) ? t('hkBusy') : plainNow ? t('hkPrintable', { k: plainNow }) : '');
+}
+function setHotkeyMessage(message) {
+  $('hkMsg').textContent = message;
+  $('hkSetupMsg').textContent = message;
 }
 function toAccelerator(e) {
   if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return null;
@@ -926,12 +941,18 @@ function toAccelerator(e) {
 }
 for (const b of document.querySelectorAll('.hk')) {
   b.onclick = async () => {
+    cancelHotkeyCapture?.();
     await W.suspendHotkeys(); // 녹화 중에는 전역 단축키가 키를 가로채지 않게 잠시 해제
     b.textContent = t('hkPress');
+    const finish = () => {
+      window.removeEventListener('keydown', onKey, true);
+      cancelHotkeyCapture = null;
+    };
     const onKey = async (e) => {
       e.preventDefault();
+      e.stopImmediatePropagation();
       if (e.key === 'Escape') {
-        window.removeEventListener('keydown', onKey, true);
+        finish();
         hkStatus = await W.setHotkeys({ ...DEFAULT_HK, ...(store.hotkeys || {}) });
         return renderHotkeys();
       }
@@ -939,17 +960,75 @@ for (const b of document.querySelectorAll('.hk')) {
       if (acc === null) return; // 조합키만 누른 상태 → 다음 키 대기
       // 글자·숫자·기호 키를 단독으로 전역 단축키로 잡으면 모든 프로그램에서 그 글자를 칠 수 없게 된다
       const plain = acc && !acc.includes('+') && !/^(F\d{1,2}|Insert|Pause|ScrollLock|PrintScreen|num\d)$/.test(acc);
-      if (plain) { $('hkMsg').textContent = t('hkPrintable', { k: acc }); return; }
-      window.removeEventListener('keydown', onKey, true);
+      if (plain) { setHotkeyMessage(t('hkPrintable', { k: acc })); return; }
       const hk = { ...DEFAULT_HK, ...(store.hotkeys || {}), [b.dataset.hk]: acc };
+      if (acc && Object.entries(hk).some(([name, key]) => name !== b.dataset.hk && key === acc)) {
+        setHotkeyMessage(t('hkDuplicate')); return;
+      }
+      finish();
       store.hotkeys = hk;
       hkStatus = await W.setHotkeys(hk);
       renderHotkeys();
     };
+    cancelHotkeyCapture = finish;
     window.addEventListener('keydown', onKey, true);
   };
 }
+async function finishHotkeySetup() {
+  cancelHotkeyCapture?.();
+  hkStatus = await W.setHotkeys({ ...DEFAULT_HK, ...(store.hotkeys || {}) });
+  store.hotkeySetupDone = true;
+  await W.setStore({ hotkeySetupDone: true });
+  $('hotkeySetupDialog').close();
+  renderHotkeys();
+  setMode(hotkeySetupMode || 'mini');
+  hotkeySetupMode = null;
+}
+$('btnHotkeyDefaults').onclick = async () => {
+  cancelHotkeyCapture?.();
+  store.hotkeys = { ...DEFAULT_HK };
+  hkStatus = await W.setHotkeys(store.hotkeys);
+  renderHotkeys();
+};
+$('btnHotkeySetupDone').onclick = finishHotkeySetup;
+$('btnTutorialSkip').onclick = finishHotkeySetup;
+function showTutorialStep(step) {
+  tutorialStep = Math.max(0, Math.min(2, step));
+  for (const section of document.querySelectorAll('[data-tutorial-step]')) {
+    section.classList.toggle('hidden', Number(section.dataset.tutorialStep) !== tutorialStep);
+  }
+  $('tutorialProgress').textContent = `${tutorialStep + 1} / 3`;
+  $('btnTutorialBack').classList.toggle('hidden', tutorialStep === 0);
+  $('btnTutorialNext').classList.toggle('hidden', tutorialStep === 2);
+  $('btnHotkeySetupDone').classList.toggle('hidden', tutorialStep !== 2);
+  $('hotkeySetupDialog').setAttribute('aria-labelledby', ['hotkeySetupTitle', 'tutorialModesTitle', 'tutorialConnectTitle'][tutorialStep]);
+  if (tutorialStep === 0) $('hotkeySetupDialog').setAttribute('aria-describedby', 'hotkeySetupIntro');
+  else $('hotkeySetupDialog').removeAttribute('aria-describedby');
+  fit();
+}
+async function changeTutorialStep(step) {
+  cancelHotkeyCapture?.();
+  hkStatus = await W.setHotkeys({ ...DEFAULT_HK, ...(store.hotkeys || {}) });
+  renderHotkeys();
+  showTutorialStep(step);
+}
+$('btnTutorialNext').onclick = () => changeTutorialStep(tutorialStep + 1);
+$('btnTutorialBack').onclick = () => changeTutorialStep(tutorialStep - 1);
+$('btnTutorialReplay').onclick = openHotkeySetup;
+$('hotkeySetupDialog').addEventListener('cancel', (event) => {
+  event.preventDefault();
+  finishHotkeySetup();
+});
+function openHotkeySetup() {
+  hotkeySetupMode = mode;
+  setMode('full'); // Leave taskbar placement before sizing the first-run popup.
+  $('hotkeySetupDialog').showModal();
+  showTutorialStep(0);
+  renderHotkeys();
+  fit();
+}
 W.onHotkey((name, wasVisible) => {
+  if ($('hotkeySetupDialog').open) return;
   if (name === 'toggle') {
     if (!wasVisible) setMode('taskbar');
     else if (mode === 'taskbar') setMode('mini');
@@ -1033,6 +1112,7 @@ for (const b of document.querySelectorAll('.brand-btn')) b.onclick = (e) => { e.
   applyOptions();
   hkStatus = await W.hotkeyStatus();
   renderHotkeys();
+  if (!store.hotkeySetupDone) openHotkeySetup();
   await refresh();
   setInterval(refresh, 60 * 1000); // 1분마다 사용량 갱신
   setInterval(() => { renderUsage(); renderMini(); renderChar(); renderTaskbar(); }, 20 * 1000); // 남은 시간 카운트다운

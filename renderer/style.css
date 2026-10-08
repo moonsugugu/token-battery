@@ -36,6 +36,21 @@ html, body { margin: 0; background: transparent; color: var(--text);
   font: 12.5px/1.4 var(--font); user-select: none; overflow: hidden; }
 button, input, select { font: inherit; color: inherit; }
 
+.hotkey-setup { width: calc(100% - 24px); max-width: 368px; max-height: calc(100% - 24px);
+  margin: auto; padding: 22px; background: var(--bg); color: var(--text); border: 1px solid var(--panel-bd);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow-y: auto; }
+.hotkey-setup::backdrop { background: rgba(0, 0, 0, .72); }
+.hotkey-setup h2 { margin: 0 0 12px; font-size: 18px; font-family: var(--font-head); }
+.hotkey-setup p { line-height: 1.65; margin: 10px 0; }
+.setup-key-row { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--line); }
+.setup-key-row .hk { min-width: 68px; font-size: 16px; }
+.setup-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.hk-message:empty { display: none; }
+.tutorial-progress { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-bottom: 14px; }
+.tutorial-mode { display: grid; gap: 5px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.tutorial-mode span { color: var(--muted); line-height: 1.6; }
+
 .card { position: relative; margin: 6px; background: var(--bg); border: var(--card-bd); border-radius: var(--radius);
   box-shadow: var(--shadow); overflow: hidden; isolation: isolate; }
 .card::before, .card::after { content: none; position: absolute; pointer-events: none; z-index: -1; }
