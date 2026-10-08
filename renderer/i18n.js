@@ -11,7 +11,7 @@ const I18N = {
   ko: {
     appName: '토큰배터리',
     refresh: '새로고침', settings: '설정', mini: '미니 모드', expand: '자세히 보기', hide: '트레이로 숨기기',
-    lang: '언어', theme: '디자인', show: '표시', opacity: '투명도', autostart: '윈도우 시작 시 자동 실행',
+    lang: '언어', theme: '디자인', show: '표시', opacity: '투명도', autostart: '로그인 시 자동 실행',
     features: '기능', alerts: '사용량 알림', cost: '비용 분석', taskWarn: '긴 작업 경고',
     claudeLogin: 'claude.ai 로그인', claudeManual: 'Claude 직접 입력',
     h5: '5시간', wk: '주간', h5s: '5h', wks: '주간',
@@ -44,7 +44,7 @@ const I18N = {
   en: {
     appName: 'TokenBattery',
     refresh: 'Refresh', settings: 'Settings', mini: 'Mini mode', expand: 'Expand', hide: 'Hide to tray',
-    lang: 'Language', theme: 'Design', show: 'Show', opacity: 'Opacity', autostart: 'Start with Windows',
+    lang: 'Language', theme: 'Design', show: 'Show', opacity: 'Opacity', autostart: 'Start at login',
     features: 'Features', alerts: 'Usage alerts', cost: 'Cost analysis', taskWarn: 'Long-task warning',
     claudeLogin: 'Log in to claude.ai', claudeManual: 'Enter Claude manually',
     h5: '5-hour', wk: 'Weekly', h5s: '5h', wks: 'Week',
@@ -77,7 +77,7 @@ const I18N = {
   ja: {
     appName: 'トークンバッテリー',
     refresh: '更新', settings: '設定', mini: 'ミニモード', expand: '詳細表示', hide: 'トレイに隠す',
-    lang: '言語', theme: 'デザイン', show: '表示', opacity: '透明度', autostart: 'Windows 起動時に実行',
+    lang: '言語', theme: 'デザイン', show: '表示', opacity: '透明度', autostart: 'ログイン時に起動',
     features: '機能', alerts: '使用量アラート', cost: 'コスト分析', taskWarn: '長時間タスク警告',
     claudeLogin: 'claude.ai にログイン', claudeManual: 'Claude を手動入力',
     h5: '5時間', wk: '週間', h5s: '5h', wks: '週',
@@ -110,7 +110,7 @@ const I18N = {
   zh: {
     appName: 'TokenBattery',
     refresh: '刷新', settings: '设置', mini: '迷你模式', expand: '详细视图', hide: '隐藏到托盘',
-    lang: '语言', theme: '设计', show: '显示', opacity: '透明度', autostart: '开机自动启动',
+    lang: '语言', theme: '设计', show: '显示', opacity: '透明度', autostart: '登录时启动',
     features: '功能', alerts: '用量提醒', cost: '费用分析', taskWarn: '长任务警告',
     claudeLogin: '登录 claude.ai', claudeManual: '手动输入 Claude',
     h5: '5小时', wk: '每周', h5s: '5h', wks: '周',
@@ -143,7 +143,7 @@ const I18N = {
   es: {
     appName: 'TokenBattery',
     refresh: 'Actualizar', settings: 'Ajustes', mini: 'Modo mini', expand: 'Ampliar', hide: 'Ocultar en bandeja',
-    lang: 'Idioma', theme: 'Diseño', show: 'Mostrar', opacity: 'Opacidad', autostart: 'Iniciar con Windows',
+    lang: 'Idioma', theme: 'Diseño', show: 'Mostrar', opacity: 'Opacidad', autostart: 'Iniciar al iniciar sesión',
     features: 'Funciones', alerts: 'Alertas de uso', cost: 'Análisis de costos', taskWarn: 'Aviso de tareas largas',
     claudeLogin: 'Iniciar sesión en claude.ai', claudeManual: 'Introducir Claude manualmente',
     h5: '5 horas', wk: 'Semanal', h5s: '5h', wks: 'Sem',
@@ -201,7 +201,7 @@ function t(key, vars) {
 // ---------- 캐릭터 모드 · 단축키 문구 ----------
 const I18N_EXTRA = {
   ko: {
-    resize: '끌어서 크기 조절 · 더블클릭하면 원래 크기', charMode: '캐릭터 모드', hotkeys: '단축키', hkToggle: '미니 켜기/끄기', hkFull: '위젯 보이기/숨기기', hkPress: '키를 누르세요…',
+    resize: '끌어서 크기 조절 · 더블클릭하면 원래 크기', charMode: '캐릭터 모드', hotkeys: '단축키', hkToggle: '모드 전환', hkFull: '위젯 보이기/숨기기', hkPress: '키를 누르세요…',
     hkNone: '없음', hkBusy: '다른 프로그램이 사용 중인 키예요', hkHint: 'Esc 취소 · Backspace 끄기',
     miniTip: '{s}: 5시간 {p5}% (리셋 {r5}) · 주간 {pw}% (리셋 {rw})',
     b_fresh: '충전 넉넉해요!', b_ok: '에너지 가득, 열심히 일해요', b_tired: '배터리가 조금 줄었어요…', b_dizzy: '배터리 잔량이 얼마 안 남았어요! 😵', b_sleep: '충전 대기 중… 리셋을 기다려요', b_none: '연결하고 잔량을 확인해 주세요',
@@ -225,7 +225,7 @@ const I18N_EXTRA = {
     notifyForegroundSkipped: '코딩 창이 앞에 있어 알림을 건너뛰었어요.',
   },
   en: {
-    resize: 'Drag to resize · double-click to reset', charMode: 'Character mode', hotkeys: 'Hotkeys', hkToggle: 'Mini on/off', hkFull: 'Show / hide widget', hkPress: 'Press a key…',
+    resize: 'Drag to resize · double-click to reset', charMode: 'Character mode', hotkeys: 'Hotkeys', hkToggle: 'Switch display mode', hkFull: 'Show / hide widget', hkPress: 'Press a key…',
     hkNone: 'None', hkBusy: 'Key is used by another app', hkHint: 'Esc cancel · Backspace clear',
     miniTip: '{s}: 5h {p5}% (reset {r5}) · weekly {pw}% (reset {rw})',
     b_fresh: 'Fully charged!', b_ok: 'Plenty of power · hard at work', b_tired: 'Battery is running low…', b_dizzy: 'Almost out of charge! 😵', b_sleep: 'Charging after reset…', b_none: 'Connect to check your charge',
@@ -249,7 +249,7 @@ const I18N_EXTRA = {
     notifyForegroundSkipped: 'Skipped because a coding window is in front.',
   },
   ja: {
-    resize: 'ドラッグでサイズ変更 · ダブルクリックで元に戻す', charMode: 'キャラクターモード', hotkeys: 'ショートカット', hkToggle: 'ミニ表示 ON/OFF', hkFull: 'ウィジェット表示/非表示', hkPress: 'キーを押してください…',
+    resize: 'ドラッグでサイズ変更 · ダブルクリックで元に戻す', charMode: 'キャラクターモード', hotkeys: 'ショートカット', hkToggle: '表示モード切替', hkFull: 'ウィジェット表示/非表示', hkPress: 'キーを押してください…',
     hkNone: 'なし', hkBusy: '他のアプリが使用中のキーです', hkHint: 'Esc 取消 · Backspace 解除',
     miniTip: '{s}: 5時間 {p5}% (リセット {r5}) · 週間 {pw}% (リセット {rw})',
     b_fresh: '充電たっぷり!', b_ok: '電力十分、作業中', b_tired: 'バッテリーが減ってきた…', b_dizzy: '残量わずか! 😵', b_sleep: 'リセット後の充電待ち…', b_none: '接続して残量を確認してね',
@@ -259,7 +259,7 @@ const I18N_EXTRA = {
     notifyHooksTitle: 'Claude Code · Codex 検知', notifyHooksInstall: '完了検知を接続', notifyHooksRemove: 'フック解除', notifyHooksHelp: 'Telegram の接続とは別に、作業完了通知を受け取るには下の「完了検知を接続」を押してください。設定をバックアップしてフックを追加します。プロンプト本文は送信せず、ローカル信号のみを送ります。Codex は再起動後に /hooks で確認・信頼し、Claude Code も再起動してください。', notifyHooksMissing: '{services} の完了検知を接続してください。', notifyHooksReadyNote: 'Claude Code と Codex の完了検知が接続されています。', notifyStateReady: '接続済み', notifyStateNeedTelegram: 'Bot Token と Chat ID を設定してください。', notifyStateNeedKakao: 'REST キーで Kakao に接続してください。', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: '完了検知を接続しました。Claude Code を再起動し、Codex は再起動後に /hooks で TokenBattery のフックを確認・信頼してください。', notifyRemoved: 'TokenBattery のフックを解除しました。', notifyConfirmInstall: '設定ファイルを編集し、既存ファイルをバックアップします。続行しますか？', notifyConfirmRemove: 'TokenBattery が追加したフックだけを削除しますか？', notifyCopied: '保存しました。', notifyKakaoPending: 'ブラウザーで Kakao ログインを完了してください。', notifyForegroundSkipped: 'コーディング画面が前面のため通知をスキップしました。',
   },
   zh: {
-    resize: '拖动调整大小 · 双击恢复', charMode: '角色模式', hotkeys: '快捷键', hkToggle: '迷你开/关', hkFull: '显示/隐藏小部件', hkPress: '请按键…',
+    resize: '拖动调整大小 · 双击恢复', charMode: '角色模式', hotkeys: '快捷键', hkToggle: '切换显示模式', hkFull: '显示/隐藏小部件', hkPress: '请按键…',
     hkNone: '无', hkBusy: '该键已被其他程序占用', hkHint: 'Esc 取消 · Backspace 清除',
     miniTip: '{s}: 5小时 {p5}% (重置 {r5}) · 每周 {pw}% (重置 {rw})',
     b_fresh: '电量充足!', b_ok: '能量满满，努力工作中', b_tired: '电量正在下降…', b_dizzy: '电量快用完了! 😵', b_sleep: '等待重置充电…', b_none: '连接后查看剩余电量',
@@ -269,7 +269,7 @@ const I18N_EXTRA = {
     notifyHooksTitle: 'Claude Code · Codex 任务检测', notifyHooksInstall: '连接完成检测', notifyHooksRemove: '移除钩子', notifyHooksHelp: '连接 Telegram 后，还需点击下方“连接完成检测”才能收到任务完成消息。添加前会备份用户配置。不发送提示词或对话内容，仅通过本机回环发送开始/结束信号。重启 Codex 后请在 /hooks 中检查并信任 TokenBattery 钩子，也请重启 Claude Code。', notifyHooksMissing: '要接收完成消息，请连接 {services} 的任务检测。', notifyHooksReadyNote: 'Claude Code 和 Codex 的完成检测已连接。', notifyStateReady: '已连接', notifyStateNeedTelegram: '请设置 Bot Token 和 Chat ID。', notifyStateNeedKakao: '请用 Kakao REST 密钥登录连接。', notifyHooksReady: 'Claude {claude} · Codex {codex}', notifyInstalled: '完成检测已连接。请重启 Claude Code；重启 Codex 后在 /hooks 中检查并信任 TokenBattery 钩子。', notifyRemoved: '已移除 TokenBattery 添加的钩子。', notifyConfirmInstall: '将修改 Claude 和 Codex 用户配置，并创建备份。继续吗？', notifyConfirmRemove: '只移除 TokenBattery 添加的钩子吗？', notifyCopied: '已保存。', notifyKakaoPending: '请在浏览器中完成 Kakao 登录。', notifyForegroundSkipped: '编码窗口在前台，已跳过通知。',
   },
   es: {
-    resize: 'Arrastra para cambiar tamaño · doble clic para restablecer', charMode: 'Modo personaje', hotkeys: 'Atajos', hkToggle: 'Mini sí/no', hkFull: 'Mostrar / ocultar widget', hkPress: 'Pulsa una tecla…',
+    resize: 'Arrastra para cambiar tamaño · doble clic para restablecer', charMode: 'Modo personaje', hotkeys: 'Atajos', hkToggle: 'Cambiar modo de vista', hkFull: 'Mostrar / ocultar widget', hkPress: 'Pulsa una tecla…',
     hkNone: 'Ninguno', hkBusy: 'Otra app usa esta tecla', hkHint: 'Esc cancelar · Retroceso borrar',
     miniTip: '{s}: 5 h {p5}% (reinicio {r5}) · semanal {pw}% (reinicio {rw})',
     b_fresh: '¡Carga completa!', b_ok: 'Energía de sobra · trabajando', b_tired: 'La batería va bajando…', b_dizzy: '¡Queda muy poca carga! 😵', b_sleep: 'Esperando la recarga del reinicio…', b_none: 'Conecta para ver la carga',
@@ -289,7 +289,7 @@ Object.assign(I18N.ko, {
   notifyHelpKakaoNote: '이 앱은 친구에게 보내기가 아니라 본인 카카오톡의 ‘나와의 채팅’으로만 전송합니다. 메뉴 위치가 달라졌다면 아래 공식 문서를 확인하세요.',
   notifyHelpAgentsTitle: 'Claude Code · Codex 완료 감지 연결', notifyHelpTroubleTitle: '알림이 여전히 오지 않을 때',
   notifyHelpTroubleBody: '텔레그램은 Bot Token 저장, 봇 대화방에서 보낸 /start, Chat ID 조회 결과를 확인하세요. 카카오는 REST API 키 종류, Redirect URI 완전 일치, talk_message 권한 및 GitHub 웹 도메인 등록을 확인하세요. 두 도구 모두 상태가 Claude ✓ · Codex ✓인지 확인하고 최소 작업 시간과 ‘앞에 있으면 알림 생략’ 옵션도 살펴보세요. 테스트 메시지는 메신저만 시험하므로 실제 작업 감지는 Claude Code나 Codex에서 기준 시간 이상 작업한 뒤 확인해야 합니다.',
-  notifyHelpPrivacyTitle: '전송되는 정보와 보관', notifyHelpPrivacyBody: '작업 훅은 프롬프트·코드·대화 내용을 보내지 않습니다. Claude/Codex 구분, 시작·종료 신호, 세션 식별자만 이 PC 안의 127.0.0.1로 전달합니다. 메신저에는 도구 이름, 작업 시간, 가져올 수 있는 경우 5시간 한도 잔량을 보냅니다. Bot Token과 카카오 토큰은 Windows 보안 저장소로 암호화해 로컬에 저장합니다.',
+  notifyHelpPrivacyTitle: '전송되는 정보와 보관', notifyHelpPrivacyBody: '작업 훅은 프롬프트·코드·대화 내용을 보내지 않습니다. Claude/Codex 구분, 시작·종료 신호, 세션 식별자만 이 기기 안의 127.0.0.1로 전달합니다. 메신저에는 도구 이름, 작업 시간, 가져올 수 있는 경우 5시간 한도 잔량을 보냅니다. Bot Token과 카카오 토큰은 운영체제 보안 저장소로 암호화해 로컬에 저장합니다.',
   notifyHelpLinksTitle: '공식 설정 문서',
 });
 Object.assign(I18N.en, {
@@ -300,7 +300,7 @@ Object.assign(I18N.en, {
   notifyHelpKakaoNote: 'This app sends only to your KakaoTalk “Chat with myself,” not to friends. If the console menus have moved, use the current official guides linked below.',
   notifyHelpAgentsTitle: 'Connect Claude Code · Codex completion detection', notifyHelpTroubleTitle: 'If notifications still do not arrive',
   notifyHelpTroubleBody: 'Telegram: check that the Bot Token is saved, /start was sent to the correct private bot chat, and Chat ID lookup succeeded. Kakao: check the REST API key type, exact Redirect URI, talk_message permission, and registered GitHub web domain. Confirm both tool statuses show Claude ✓ · Codex ✓, then check the minimum duration and foreground suppression option. A test checks the messenger only; verify task detection with a real task in Claude Code or Codex that lasts longer than the minimum.',
-  notifyHelpPrivacyTitle: 'What is sent and stored', notifyHelpPrivacyBody: 'Hooks do not send prompts, code, or conversation text. They send only the Claude/Codex name, start/stop signal, and session ID to 127.0.0.1 on this PC. Notifications include the tool, elapsed time, and—when available—the remaining 5-hour usage limit. Bot and Kakao tokens are encrypted with Windows secure storage and kept locally.',
+  notifyHelpPrivacyTitle: 'What is sent and stored', notifyHelpPrivacyBody: 'Hooks do not send prompts, code, or conversation text. They send only the Claude/Codex name, start/stop signal, and session ID to 127.0.0.1 on this device. Notifications include the tool, elapsed time, and—when available—the remaining 5-hour usage limit. Bot and Kakao tokens are encrypted with the operating system secure store and kept locally.',
   notifyHelpLinksTitle: 'Official setup documentation',
 });
 Object.assign(I18N.ja, {
@@ -311,7 +311,7 @@ Object.assign(I18N.ja, {
   notifyHelpKakaoNote: 'このアプリは友だちではなく、自分の KakaoTalk「自分とのチャット」にだけ送信します。メニューが見つからない場合は下の公式ガイドを確認してください。',
   notifyHelpAgentsTitle: 'Claude Code · Codex の完了検知を接続', notifyHelpTroubleTitle: '通知が届かない場合',
   notifyHelpTroubleBody: 'Telegram は Bot Token の保存、個人チャットでの /start、Chat ID の取得を確認してください。Kakao は REST API キー、Redirect URI、talk_message 権限、GitHub ウェブドメインを確認します。両方とも Claude ✓ · Codex ✓ か確認し、最低作業時間と前面時の通知省略も確認してください。テスト送信はメッセージアプリだけを確認します。実作業の検知は最低時間以上の作業を完了して確認してください。',
-  notifyHelpPrivacyTitle: '送信・保存される情報', notifyHelpPrivacyBody: 'フックはプロンプト、コード、会話内容を送信しません。Claude/Codex の区別、開始・終了信号、セッション ID だけをこの PC の 127.0.0.1 に送ります。通知にはツール名、所要時間、取得できる場合は 5 時間利用枠の残量が含まれます。トークンは Windows のセキュアストレージで暗号化してローカル保存します。',
+  notifyHelpPrivacyTitle: '送信・保存される情報', notifyHelpPrivacyBody: 'フックはプロンプト、コード、会話内容を送信しません。Claude/Codex の区別、開始・終了信号、セッション ID だけをこの端末の 127.0.0.1 に送ります。通知にはツール名、所要時間、取得できる場合は 5 時間利用枠の残量が含まれます。トークンは OS のセキュアストレージで暗号化してローカル保存します。',
   notifyHelpLinksTitle: '公式設定ドキュメント',
 });
 Object.assign(I18N.zh, {
@@ -322,7 +322,7 @@ Object.assign(I18N.zh, {
   notifyHelpKakaoNote: '此应用只发送到你自己的 KakaoTalk“与自己的聊天”，不会发给好友。如果控制台菜单已变更，请查看下方官方指南。',
   notifyHelpAgentsTitle: '连接 Claude Code · Codex 完成检测', notifyHelpTroubleTitle: '仍未收到通知时',
   notifyHelpTroubleBody: 'Telegram：确认已保存 Bot Token、在正确的机器人私聊中发送 /start，并成功查找 Chat ID。Kakao：确认 REST API 密钥类型、Redirect URI、talk_message 权限和已登记的 GitHub 网域。两种工具状态都应显示 Claude ✓ · Codex ✓；同时检查最短任务时长和前台跳过选项。测试消息只验证消息渠道；请完成一个超过最短时长的真实任务来验证检测。',
-  notifyHelpPrivacyTitle: '发送和保存的信息', notifyHelpPrivacyBody: '任务钩子不会发送提示词、代码或对话内容，只会把 Claude/Codex 名称、开始/结束信号和会话 ID 发送到本机 127.0.0.1。通知包含工具名称、耗时，以及可读取时的 5 小时用量剩余比例。Token 由 Windows 安全存储加密并保存在本机。',
+  notifyHelpPrivacyTitle: '发送和保存的信息', notifyHelpPrivacyBody: '任务钩子不会发送提示词、代码或对话内容，只会把 Claude/Codex 名称、开始/结束信号和会话 ID 发送到本机 127.0.0.1。通知包含工具名称、耗时，以及可读取时的 5 小时用量剩余比例。Token 由操作系统安全存储加密并保存在本机。',
   notifyHelpLinksTitle: '官方设置文档',
 });
 Object.assign(I18N.es, {
@@ -333,7 +333,7 @@ Object.assign(I18N.es, {
   notifyHelpKakaoNote: 'La app solo envía mensajes a tu propio chat de KakaoTalk, no a tus amistades. Si cambiaron los menús, consulta las guías oficiales enlazadas abajo.',
   notifyHelpAgentsTitle: 'Conectar detección de finalización de Claude Code · Codex', notifyHelpTroubleTitle: 'Si los avisos no llegan',
   notifyHelpTroubleBody: 'Telegram: verifica el Bot Token, que enviaste /start al chat privado correcto y que se encontró el Chat ID. Kakao: comprueba el tipo de clave REST, Redirect URI exacta, permiso talk_message y dominio web GitHub. En ambas herramientas, confirma Claude ✓ · Codex ✓ y revisa la duración mínima y la opción de omitir en primer plano. La prueba solo comprueba el canal; termina una tarea real que supere el tiempo mínimo para verificar la detección.',
-  notifyHelpPrivacyTitle: 'Datos enviados y almacenados', notifyHelpPrivacyBody: 'Los hooks no envían prompts, código ni conversaciones. Solo envían el nombre Claude/Codex, señales de inicio/fin y el ID de sesión a 127.0.0.1 en este equipo. El aviso incluye la herramienta, el tiempo y, si está disponible, el límite restante de 5 horas. Windows cifra los tokens y se guardan localmente.',
+  notifyHelpPrivacyTitle: 'Datos enviados y almacenados', notifyHelpPrivacyBody: 'Los hooks no envían prompts, código ni conversaciones. Solo envían el nombre Claude/Codex, señales de inicio/fin y el ID de sesión a 127.0.0.1 en este equipo. El aviso incluye la herramienta, el tiempo y, si está disponible, el límite restante de 5 horas. Los tokens se cifran con el almacén seguro del sistema operativo y se guardan localmente.',
   notifyHelpLinksTitle: 'Documentación oficial',
 });
 
@@ -342,7 +342,7 @@ const NOTIFY_GUIDE_STEPS = {
     telegram: [
       '텔레그램 앱에서 공식 봇 @BotFather를 찾아 대화를 열고 /start를 누르세요. 이어서 /newbot 명령을 보내 새 알림 봇을 만듭니다.',
       '봇 표시 이름을 정하고, 고유한 사용자 이름을 입력하세요. 사용자 이름은 bot으로 끝나야 합니다. 생성 완료 메시지의 HTTP API Token을 복사합니다.',
-      'TokenBattery 설정에서 받을 곳을 텔레그램으로 두고 Bot Token을 붙여 넣은 뒤 토큰 저장을 누르세요. 저장 후 입력칸은 비워지며 토큰은 Windows 보안 저장소로 암호화 저장됩니다.',
+      'TokenBattery 설정에서 받을 곳을 텔레그램으로 두고 Bot Token을 붙여 넣은 뒤 토큰 저장을 누르세요. 저장 후 입력칸은 비워지며 토큰은 운영체제 보안 저장소로 암호화 저장됩니다.',
       'BotFather가 알려준 봇 링크를 열어 본인 계정의 개인 대화방으로 들어갑니다. 시작(Start) 또는 /start를 보내고 짧은 메시지 하나를 더 보내세요. 그룹이 아니라 봇과의 개인 대화여야 합니다.',
       'TokenBattery로 돌아와 Chat ID 찾기를 누릅니다. 봇 대화 기록에서 개인 Chat ID를 찾아 자동 저장합니다. 여러 사람의 개인 대화가 발견되면 자동 선택하지 않으므로 본인 Chat ID를 직접 입력하세요.',
       '알림 켜기를 체크하고 최소 작업 시간을 설정하세요. 기본값은 10분이며 더 짧은 작업은 알림을 보내지 않습니다. 코딩 창이나 위젯이 앞에 있어도 받고 싶다면 앞에 있으면 알림 생략을 해제하세요.',
@@ -370,7 +370,7 @@ const NOTIFY_GUIDE_STEPS = {
     telegram: [
       'In Telegram, find the official @BotFather account. Send /start, then /newbot to create a notification bot.',
       'Choose a display name and a unique username ending in bot. Copy the HTTP API Token BotFather returns.',
-      'In TokenBattery, leave the destination as Telegram. Paste the token into Bot Token and select Save token. The field clears; Windows secure storage encrypts the token locally.',
+      'In TokenBattery, leave the destination as Telegram. Paste the token into Bot Token and select Save token. The field clears; the operating system secure store encrypts the token locally.',
       'Open the bot link BotFather provided and enter its private chat from your own account. Tap Start or send /start, then send one more short message. Use a private chat, not a group.',
       'Return to TokenBattery and select Find Chat ID. Your private-chat ID is saved. If multiple people have chatted with the bot, it will not guess; enter your own Chat ID manually.',
       'Enable notifications and choose a minimum task duration. The default is 10 minutes; shorter tasks are skipped. Turn off foreground suppression if you also want alerts while a coding window or widget is in front.',
@@ -398,7 +398,7 @@ const NOTIFY_GUIDE_STEPS = {
     telegram: [
       'Telegram で公式アカウント @BotFather を探します。/start の後に /newbot を送信して通知ボットを作成します。',
       'ボットの表示名と、bot で終わる一意のユーザー名を設定し、BotFather が返す HTTP API Token をコピーします。',
-      'TokenBattery の送信先を Telegram にして Bot Token を貼り付け、「保存」を押します。保存後は入力欄が空になり、Windows で暗号化してローカル保存されます。',
+      'TokenBattery の送信先を Telegram にして Bot Token を貼り付け、「保存」を押します。保存後は入力欄が空になり、OS のセキュアストレージで暗号化してローカル保存されます。',
       'BotFather のボットリンクを開き、自分のアカウントで個人チャットに入ります。「開始」または /start を送り、短いメッセージをもう一つ送信します。グループは使わないでください。',
       'TokenBattery に戻って Chat ID を検索します。個人チャットの ID が保存されます。複数人のチャットが見つかった場合は自動選択しないため、自分の ID を入力してください。',
       '通知を有効にして最低作業時間を設定します。初期値は 10 分で、それより短い作業は通知されません。前面でも受け取りたい場合は前面時の省略を解除します。',
@@ -426,7 +426,7 @@ const NOTIFY_GUIDE_STEPS = {
     telegram: [
       '在 Telegram 搜索官方账号 @BotFather。先发送 /start，再发送 /newbot 创建通知机器人。',
       '设置显示名称和以 bot 结尾的唯一用户名，然后复制 BotFather 返回的 HTTP API Token。',
-      '在 TokenBattery 选择 Telegram，把 Token 粘贴到 Bot Token 并保存。保存后输入框清空；Windows 会加密并在本机保存。',
+      '在 TokenBattery 选择 Telegram，把 Token 粘贴到 Bot Token 并保存。保存后输入框清空；令牌会由操作系统安全存储加密并保存在本机。',
       '打开 BotFather 给出的机器人链接，用自己的账号进入私聊。点击 Start 或发送 /start，再发送一条消息。不要使用群聊。',
       '返回 TokenBattery 点击查找 Chat ID。应用会保存私聊 ID。如果发现多个人的私聊，不会自动猜测，请手动填写自己的 ID。',
       '启用通知并设置最短任务时长。默认 10 分钟，短任务会跳过。若希望编码窗口在前台时也提醒，请关闭前台跳过选项。',
@@ -454,7 +454,7 @@ const NOTIFY_GUIDE_STEPS = {
     telegram: [
       'En Telegram busca la cuenta oficial @BotFather. Envía /start y después /newbot para crear un bot de avisos.',
       'Elige un nombre visible y uno único que termine en bot. Copia el HTTP API Token que devuelve BotFather.',
-      'En TokenBattery elige Telegram, pega el token en Bot Token y pulsa Guardar. El campo se vacía; Windows cifra el token y lo guarda localmente.',
+      'En TokenBattery elige Telegram, pega el token en Bot Token y pulsa Guardar. El campo se vacía; el sistema operativo cifra el token y lo guarda localmente.',
       'Abre el enlace del bot y entra al chat privado con tu cuenta. Pulsa Start o envía /start y luego otro mensaje. No uses un grupo.',
       'Vuelve a TokenBattery y pulsa Buscar Chat ID. Se guarda el ID del chat privado. Si aparecen chats de varias personas, introduce tu propio ID manualmente.',
       'Activa los avisos y define la duración mínima. El valor inicial es 10 minutos; las tareas más cortas se omiten. Desactiva la omisión en primer plano para recibir avisos con una ventana de código delante.',
@@ -503,7 +503,7 @@ const I18N_CREW = {
     today: '오늘의 상태', nextRecover: '다음 회복', subsTitle: '구독 관리', subsSub: '플랜 확인 및 관리하기', subsNext: '다음 결제 {s} {d}',
     newTask: '새 작업 시작', remainLbl: '남은 한도', usedLbl: '사용량', resetIn: '리셋까지', weekShort: '주간',
     day_good: '좋은 하루예요!', day_pace: '페이스 조절 중이에요', day_rest: '잠깐 쉬어가요',
-    hkToggle: '모드 전환 (미니→캐릭터→전체→끄기)', hkPrintable: '"{k}" 키를 단독으로 쓰면 다른 프로그램에서 그 글자를 칠 수 없어요. F키나 Ctrl/Alt 조합을 쓰세요.',
+    hkToggle: '모드 전환', hkPrintable: '"{k}" 키를 단독으로 쓰면 다른 프로그램에서 그 글자를 칠 수 없어요. F키나 Ctrl/Alt 조합을 쓰세요.',
   },
   en: {
     weeklyLeft: '{duration} left', weeklyClock: '{days} left · resets at {time}',
@@ -512,7 +512,7 @@ const I18N_CREW = {
     newTask: 'New task', remainLbl: 'Remaining', usedLbl: 'Used', resetIn: 'Resets in', resetAt: 'Reset time', weekShort: 'Week',
     timeBasisLbl: 'Time display', timeBasisClock: 'Reset time', timeBasisRemaining: 'Time left',
     day_good: 'Great day!', day_pace: 'Pacing yourself', day_rest: 'Time for a break',
-    hkToggle: 'Cycle modes (mini→character→full→off)', hkPrintable: 'Using "{k}" alone blocks typing it in every app. Use an F-key or a Ctrl/Alt combo.',
+    hkToggle: 'Switch display mode', hkPrintable: 'Using "{k}" alone blocks typing it in every app. Use an F-key or a Ctrl/Alt combo.',
   },
   ja: {
     weeklyLeft: '残り {duration}', weeklyClock: '残り {days} · {time} リセット',
@@ -521,7 +521,7 @@ const I18N_CREW = {
     newTask: '新しい作業', remainLbl: '残り枠', usedLbl: '使用量', resetIn: 'リセットまで', resetAt: 'リセット時刻', weekShort: '週間',
     timeBasisLbl: '時間表示', timeBasisClock: 'リセット時刻', timeBasisRemaining: '残り時間',
     day_good: 'いい一日です!', day_pace: 'ペース調整中', day_rest: 'ひと休みしよう',
-    hkToggle: 'モード切替 (ミニ→キャラ→全体→オフ)', hkPrintable: '「{k}」を単独で使うと他のアプリでその文字が打てません。Fキーか Ctrl/Alt との組み合わせを使ってください。',
+    hkToggle: '表示モード切替', hkPrintable: '「{k}」を単独で使うと他のアプリでその文字が打てません。Fキーか Ctrl/Alt との組み合わせを使ってください。',
   },
   zh: {
     weeklyLeft: '剩余 {duration}', weeklyClock: '剩余 {days} · {time} 重置',
@@ -530,7 +530,7 @@ const I18N_CREW = {
     newTask: '开始新任务', remainLbl: '剩余额度', usedLbl: '已用', resetIn: '重置还需', resetAt: '重置时间', weekShort: '每周',
     timeBasisLbl: '时间显示', timeBasisClock: '重置时间', timeBasisRemaining: '剩余时间',
     day_good: '美好的一天!', day_pace: '正在调整节奏', day_rest: '休息一下吧',
-    hkToggle: '切换模式 (迷你→角色→完整→关闭)', hkPrintable: '单独使用“{k}”会导致其他程序无法输入该字符。请使用 F 键或 Ctrl/Alt 组合。',
+    hkToggle: '切换显示模式', hkPrintable: '单独使用“{k}”会导致其他程序无法输入该字符。请使用 F 键或 Ctrl/Alt 组合。',
   },
   es: {
     weeklyLeft: 'Quedan {duration}', weeklyClock: 'Quedan {days} · reinicio a las {time}',
@@ -539,7 +539,7 @@ const I18N_CREW = {
     newTask: 'Nueva tarea', remainLbl: 'Restante', usedLbl: 'Usado', resetIn: 'Reinicio en', resetAt: 'Hora de reinicio', weekShort: 'Sem',
     timeBasisLbl: 'Hora mostrada', timeBasisClock: 'Hora de reinicio', timeBasisRemaining: 'Tiempo restante',
     day_good: '¡Buen día!', day_pace: 'Controlando el ritmo', day_rest: 'Hora de un descanso',
-    hkToggle: 'Cambiar modo (mini→personaje→completo→off)', hkPrintable: 'Usar "{k}" solo impide escribirlo en otras apps. Usa una tecla F o Ctrl/Alt.',
+    hkToggle: 'Cambiar modo de vista', hkPrintable: 'Usar "{k}" solo impide escribirlo en otras apps. Usa una tecla F o Ctrl/Alt.',
   },
 };
 for (const l of Object.keys(I18N_CREW)) Object.assign(I18N[l], I18N_CREW[l]);
@@ -547,23 +547,23 @@ for (const l of Object.keys(I18N_CREW)) Object.assign(I18N[l], I18N_CREW[l]);
 const I18N_UPDATES = {
   ko: {
     updateTitle: '앱 업데이트', updateView: '업데이트 보기', updateCheck: '업데이트 확인', updateDownload: '새 버전 다운로드', updateInstall: '재시작하고 설치', updateReleases: '릴리스 보기',
-    updateIdle: '새 버전은 자동으로 확인해요.', updateChecking: '새 버전 확인 중…', updateCurrent: '최신 버전을 사용하고 있어요.', updateAvailable: '새 버전 v{v}이 나왔어요.', updateDownloading: '다운로드 중… {n}%', updateDownloaded: 'v{v} 설치 준비 완료. 재시작하면 업데이트돼요.', updateInstalling: '저장 후 재시작하고 설치하는 중…', updateDisabled: '자동 업데이트는 Windows 설치판에서 사용할 수 있어요.', updateError: '업데이트에 실패했어요. 다시 시도하거나 릴리스에서 설치 파일을 받아주세요.', updateHelp: '시작할 때와 6시간마다 확인해요. 다운로드 후 원하는 때 재시작해 설치할 수 있어요. 설정과 친구 성장 기록은 유지돼요.',
+    updateIdle: '새 버전은 자동으로 확인해요.', updateChecking: '새 버전 확인 중…', updateCurrent: '최신 버전을 사용하고 있어요.', updateAvailable: '새 버전 v{v}이 나왔어요.', updateDownloading: '다운로드 중… {n}%', updateDownloaded: 'v{v} 설치 준비 완료. 재시작하면 업데이트돼요.', updateInstalling: '저장 후 재시작하고 설치하는 중…', updateDisabled: 'Windows는 자동 업데이트돼요. Mac에서는 릴리스에서 최신 DMG를 내려받아 응용 프로그램 폴더의 앱을 교체해 주세요.', updateError: '업데이트에 실패했어요. 다시 시도하거나 릴리스에서 설치 파일을 받아주세요.', updateHelp: 'Windows는 시작할 때와 6시간마다 업데이트를 확인해요. Mac은 새 릴리스에서 DMG를 받아 앱을 교체해 주세요. 설정과 친구 성장 기록은 유지돼요.',
   },
   en: {
     updateTitle: 'App updates', updateView: 'View update', updateCheck: 'Check for updates', updateDownload: 'Download update', updateInstall: 'Restart and install', updateReleases: 'View releases',
-    updateIdle: 'New versions are checked automatically.', updateChecking: 'Checking for updates…', updateCurrent: 'You are up to date.', updateAvailable: 'Version {v} is available.', updateDownloading: 'Downloading… {n}%', updateDownloaded: 'Version {v} is ready. Restart to install.', updateInstalling: 'Saving, restarting and installing…', updateDisabled: 'Automatic updates are available in the Windows installed app.', updateError: 'Update failed. Try again or download the installer from Releases.', updateHelp: 'Checks at startup and every 6 hours. Download, then restart when convenient to install. Settings and companion progress are kept.',
+    updateIdle: 'New versions are checked automatically.', updateChecking: 'Checking for updates…', updateCurrent: 'You are up to date.', updateAvailable: 'Version {v} is available.', updateDownloading: 'Downloading… {n}%', updateDownloaded: 'Version {v} is ready. Restart to install.', updateInstalling: 'Saving, restarting and installing…', updateDisabled: 'Windows installs update automatically. On Mac, download the latest DMG from Releases and replace TokenBattery in Applications.', updateError: 'Update failed. Try again or download the installer from Releases.', updateHelp: 'Windows checks at startup and every 6 hours. On Mac, download the latest DMG from Releases and replace the app. Settings and companion progress are kept.',
   },
   ja: {
     updateTitle: 'アプリの更新', updateView: '更新を見る', updateCheck: '更新を確認', updateDownload: '更新をダウンロード', updateInstall: '再起動してインストール', updateReleases: 'リリースを見る',
-    updateIdle: '新しいバージョンを自動確認します。', updateChecking: '更新を確認中…', updateCurrent: '最新バージョンです。', updateAvailable: 'v{v} が利用できます。', updateDownloading: 'ダウンロード中… {n}%', updateDownloaded: 'v{v} の準備完了。再起動してインストール。', updateInstalling: '保存して再起動・インストール中…', updateDisabled: '自動更新は Windows のインストール版で利用できます。', updateError: '更新に失敗しました。再試行するかリリースからインストーラーを取得してください。', updateHelp: '起動時と6時間ごとに確認します。ダウンロード後、都合のよい時に再起動してください。設定と成長記録は維持されます。',
+    updateIdle: '新しいバージョンを自動確認します。', updateChecking: '更新を確認中…', updateCurrent: '最新バージョンです。', updateAvailable: 'v{v} が利用できます。', updateDownloading: 'ダウンロード中… {n}%', updateDownloaded: 'v{v} の準備完了。再起動してインストール。', updateInstalling: '保存して再起動・インストール中…', updateDisabled: 'Windows 版は自動更新されます。Mac ではリリースから最新 DMG をダウンロードし、アプリケーション内のアプリを置き換えてください。', updateError: '更新に失敗しました。再試行するかリリースからインストーラーを取得してください。', updateHelp: 'Windows 版は起動時と6時間ごとに確認します。Mac では新しい DMG をダウンロードしてアプリを置き換えてください。設定と成長記録は維持されます。',
   },
   zh: {
     updateTitle: '应用更新', updateView: '查看更新', updateCheck: '检查更新', updateDownload: '下载更新', updateInstall: '重启并安装', updateReleases: '查看发布',
-    updateIdle: '自动检查新版本。', updateChecking: '正在检查更新…', updateCurrent: '已是最新版本。', updateAvailable: '新版本 v{v} 已发布。', updateDownloading: '正在下载… {n}%', updateDownloaded: 'v{v} 已准备好。重启以安装。', updateInstalling: '正在保存、重启并安装…', updateDisabled: '自动更新适用于 Windows 安装版。', updateError: '更新失败。请重试或从发布页面下载安装程序。', updateHelp: '启动时及每6小时检查。下载后可在方便时重启安装。设置和伙伴成长记录将保留。',
+    updateIdle: '自动检查新版本。', updateChecking: '正在检查更新…', updateCurrent: '已是最新版本。', updateAvailable: '新版本 v{v} 已发布。', updateDownloading: '正在下载… {n}%', updateDownloaded: 'v{v} 已准备好。重启以安装。', updateInstalling: '正在保存、重启并安装…', updateDisabled: 'Windows 版会自动更新。Mac 请从发布页下载最新 DMG，并替换“应用程序”中的 TokenBattery。', updateError: '更新失败。请重试或从发布页面下载安装程序。', updateHelp: 'Windows 版在启动时及每6小时检查更新。Mac 请下载新 DMG 并替换应用；设置和伙伴成长记录会保留。',
   },
   es: {
     updateTitle: 'Actualizaciones', updateView: 'Ver actualización', updateCheck: 'Buscar actualizaciones', updateDownload: 'Descargar actualización', updateInstall: 'Reiniciar e instalar', updateReleases: 'Ver versiones',
-    updateIdle: 'Las versiones nuevas se buscan automáticamente.', updateChecking: 'Buscando actualizaciones…', updateCurrent: 'Tienes la última versión.', updateAvailable: 'La versión {v} está disponible.', updateDownloading: 'Descargando… {n}%', updateDownloaded: 'Versión {v} lista. Reinicia para instalar.', updateInstalling: 'Guardando, reiniciando e instalando…', updateDisabled: 'Las actualizaciones automáticas están disponibles en la app instalada de Windows.', updateError: 'La actualización falló. Reintenta o descarga el instalador desde las versiones.', updateHelp: 'Se comprueba al iniciar y cada 6 horas. Descarga y reinicia cuando quieras. Se conservan los ajustes y el progreso.',
+    updateIdle: 'Las versiones nuevas se buscan automáticamente.', updateChecking: 'Buscando actualizaciones…', updateCurrent: 'Tienes la última versión.', updateAvailable: 'La versión {v} está disponible.', updateDownloading: 'Descargando… {n}%', updateDownloaded: 'Versión {v} lista. Reinicia para instalar.', updateInstalling: 'Guardando, reiniciando e instalando…', updateDisabled: 'Windows se actualiza automáticamente. En Mac, descarga el DMG más reciente desde Releases y reemplaza TokenBattery en Aplicaciones.', updateError: 'La actualización falló. Reintenta o descarga el instalador desde las versiones.', updateHelp: 'Windows busca actualizaciones al iniciar y cada 6 horas. En Mac, descarga el nuevo DMG y reemplaza la app. Se conservan los ajustes y el progreso.',
   },
 };
 for (const l of Object.keys(I18N_UPDATES)) Object.assign(I18N[l], I18N_UPDATES[l]);

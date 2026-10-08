@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
 const Companions = require('./renderer/companions');
+const AgentHooks = require('./agent-hooks');
 const { TokenUsage } = require('./token-usage');
 const { taskbarBounds } = require('./taskbar');
 const { createUpdater } = require('./updater');
@@ -121,7 +122,7 @@ const DEFAULT_STORE = {
   hotkeys: { ...Hotkeys.defaults },
   hotkeySetupDone: false,
   scale: { mini: 1, char: 1, full: 1 },
-  autostartDefaulted: false, // 설치판에서 '윈도우 시작 시 자동 실행' 기본값(켜짐)을 이미 적용했는지
+  autostartDefaulted: false, // 설치판에서 로그인 시 자동 실행 기본값을 이미 적용했는지
 };
 
 async function loadStore() {
@@ -134,6 +135,10 @@ async function loadStore() {
   store.companions = Companions.migrate(store.companions || { friends: {}, targets: {} });
   store.tokenLedger ||= { seen: {}, totals: { claude: 0, codex: 0 }, lastSeen: {} };
   store.hotkeys = Hotkeys.migrate(store.hotkeys);
+  if (process.platform !== 'win32') {
+    if (store.mode === 'taskbar') store.mode = 'mini';
+    if (store.compactMode === 'taskbar') store.compactMode = 'mini';
+  }
 }
 let saveTimer = null;
 let storeWrites = Promise.resolve();
@@ -278,7 +283,7 @@ async function getCodexUsage() {
 
 // ---------- 작업 완료 알림: 비밀정보는 safeStorage에만 저장 ----------
 const notificationSecretsPath = () => path.join(app.getPath('userData'), 'notification-secrets.enc');
-const agentHookScriptPath = () => path.join(app.getPath('userData'), 'hooks', 'agent-event.ps1');
+const agentHookScriptPath = () => AgentHooks.agentHookScriptPath(app.getPath('userData'), process.platform);
 const claudeSettingsPath = () => path.join(HOME, '.claude', 'settings.json');
 const codexConfigPath = () => path.join(CODEX_HOME, 'config.toml');
 
@@ -293,7 +298,7 @@ async function readNotificationSecrets() {
 }
 
 async function writeNotificationSecrets(patch) {
-  if (!safeStorage.isEncryptionAvailable()) throw new Error('이 Windows 계정에서 OS 보안 저장소를 사용할 수 없어 비밀 키를 저장할 수 없습니다.');
+  if (!safeStorage.isEncryptionAvailable()) throw new Error('이 기기에서 OS 보안 저장소를 사용할 수 없어 비밀 키를 저장할 수 없습니다.');
   const previous = await readNotificationSecrets();
   const next = { ...previous, ...patch };
   await fs.mkdir(path.dirname(notificationSecretsPath()), { recursive: true });
@@ -536,26 +541,16 @@ async function processAgentCompletion(active) {
 }
 
 function buildAgentHookScript(token) {
-  return `param([string]$Service, [string]$Action)
-$ErrorActionPreference = 'SilentlyContinue'
-$raw = [Console]::In.ReadToEnd()
-$event = $null
-try { $event = $raw | ConvertFrom-Json } catch { exit 0 }
-$sessionId = [string]$event.session_id
-if (-not $sessionId) { $sessionId = [string]$event.sessionId }
-if (-not $sessionId) { exit 0 }
-$payload = @{ service = $Service; action = $Action; sessionId = $sessionId } | ConvertTo-Json -Compress
-try {
-  Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:${AGENT_BRIDGE_PORT}/agent-event' -Headers @{ Authorization = 'Bearer ${token}' } -ContentType 'application/json; charset=utf-8' -Body ([System.Text.Encoding]::UTF8.GetBytes($payload)) -TimeoutSec 2 | Out-Null
-} catch {}
-exit 0
-`;
+  return AgentHooks.buildAgentHookScript(token, process.platform);
 }
 
-function escapeCommandPath(value) { return String(value).replace(/"/g, '\\"'); }
 function agentHookCommand(service, action) {
-  const powershell = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
-  return `"${escapeCommandPath(powershell)}" -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "${escapeCommandPath(agentHookScriptPath())}" ${service} ${action}`;
+  return AgentHooks.agentHookCommand({
+    platform: process.platform,
+    systemRoot: process.env.SystemRoot,
+    executable: process.execPath,
+    scriptPath: agentHookScriptPath(),
+  }, service, action);
 }
 
 function removeManagedClaudeHooks(config, scriptPath) {
@@ -621,7 +616,7 @@ async function backupAndWrite(file, content) {
 }
 
 async function installClaudeHooks() {
-  if (process.platform !== 'win32') throw new Error('현재 알림 훅 설치는 Windows용입니다.');
+  if (!['win32', 'darwin'].includes(process.platform)) throw new Error('완료 감지 연결은 Windows와 macOS에서 지원합니다.');
   const file = claudeSettingsPath();
   let config = {};
   try { config = JSON.parse(await fs.readFile(file, 'utf8')); } catch (error) {
@@ -642,7 +637,7 @@ async function installClaudeHooks() {
 }
 
 async function installCodexHooks() {
-  if (process.platform !== 'win32') throw new Error('현재 알림 훅 설치는 Windows용입니다.');
+  if (!['win32', 'darwin'].includes(process.platform)) throw new Error('완료 감지 연결은 Windows와 macOS에서 지원합니다.');
   const file = codexConfigPath();
   let config = '';
   try { config = await fs.readFile(file, 'utf8'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
@@ -672,7 +667,7 @@ async function getNotificationHookStatus() {
 }
 
 async function installNotificationHooks() {
-  if (process.platform !== 'win32') throw new Error('현재 알림 훅 설치는 Windows용입니다.');
+  if (!['win32', 'darwin'].includes(process.platform)) throw new Error('완료 감지 연결은 Windows와 macOS에서 지원합니다.');
   await startAgentBridge();
   const secrets = await readNotificationSecrets();
   await fs.mkdir(path.dirname(agentHookScriptPath()), { recursive: true });
@@ -964,9 +959,10 @@ function resetPosition() {
 function buildTrayMenu() {
   if (!tray) return;
   tray.setToolTip(trayLabels.tip);
+  const modes = process.platform === 'win32' ? ['taskbar', 'mini', 'char', 'full'] : ['mini', 'char', 'full'];
   trayMenu = Menu.buildFromTemplate([
     { label: trayLabels.toggle, click: () => (win.isVisible() ? win.hide() : win.show()) },
-    ...['taskbar', 'mini', 'char', 'full'].map((mode) => ({ label: trayLabels[mode], type: 'radio', checked: store.mode === mode, click: () => { win.showInactive(); win.webContents.send('mode', mode); } })),
+    ...modes.map((mode) => ({ label: trayLabels[mode], type: 'radio', checked: store.mode === mode, click: () => { win.showInactive(); win.webContents.send('mode', mode); } })),
     { label: trayLabels.reset, click: resetPosition },
     { type: 'separator' },
     { label: trayLabels.update || 'Check for updates', click: () => { showUpdates(); updates?.check(); } },
@@ -984,6 +980,7 @@ function createTray() {
 }
 
 // ---------- IPC ----------
+ipcMain.handle('app:platform', () => process.platform);
 ipcMain.handle('updates:get', () => updates?.getState());
 ipcMain.handle('updates:check', () => updates?.check());
 ipcMain.handle('updates:download', () => updates?.download());
@@ -1027,7 +1024,7 @@ ipcMain.handle('store:set', (_e, patch) => {
     const key = service === 'claude' ? 'showClaude' : 'showCodex';
     if (key in settings && settings[key] !== store[key]) tokenSince[service] = now;
   }
-  if ('mode' in settings && !['taskbar', 'mini', 'char', 'full'].includes(settings.mode)) delete settings.mode;
+  if ('mode' in settings && (!['taskbar', 'mini', 'char', 'full'].includes(settings.mode) || (settings.mode === 'taskbar' && process.platform !== 'win32'))) delete settings.mode;
   const previous = store.mode;
   store = { ...store, ...settings };
   if ('mode' in settings) applyWindowMode(previous);
@@ -1154,7 +1151,7 @@ app.on('will-quit', () => {
   if (bridgeServer) bridgeServer.close();
 });
 
-// 윈도우 시작 시 자동 실행: 켤 때와 상태를 읽을 때 같은 실행 파일·인자를 넘겨야 한다.
+// 로그인 시 자동 실행: 켤 때와 상태를 읽을 때 같은 실행 파일·인자를 넘겨야 한다.
 // 인자 없이 읽으면 등록값("실행파일 앱경로")과 비교가 어긋나서, 켜져 있어도 설정 화면에 꺼짐으로 보인다
 const autostartItem = () => ({ path: process.execPath, args: [path.resolve(__dirname)] });
 const getAutostart = () => app.getLoginItemSettings(autostartItem()).openAtLogin;
@@ -1193,7 +1190,7 @@ function applyAutostartDefault() {
 
 // ---------- 시작 ----------
 app.setName('TokenBattery');
-app.setAppUserModelId(APP_ID);
+if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
 // 개발 확인용 스냅샷 모드는 실제 설정을 건드리지 않도록 별도 폴더 사용
 if (process.env.WIDGET_SNAPSHOT) app.setPath('userData', process.env.WIDGET_SNAPSHOT_USER_DATA || path.join(os.tmpdir(), 'token-battery-snapshot'));
 else app.setPath('userData', path.join(app.getPath('appData'), 'ai-usage-widget')); // 이름 변경 후에도 기존 설정·로그인을 유지

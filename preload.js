@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('widget', {
+  getPlatform: () => ipcRenderer.invoke('app:platform'),
   getUpdateState: () => ipcRenderer.invoke('updates:get'),
   checkForUpdates: () => ipcRenderer.invoke('updates:check'),
   downloadUpdate: () => ipcRenderer.invoke('updates:download'),

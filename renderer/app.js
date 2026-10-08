@@ -4,6 +4,7 @@ const W = window.widget;
 let store = null;
 let usage = null;
 let tokenStatus = null;
+let supportsTaskbar = false;
 
 // ---------- 유틸 ----------
 function fmtDur(ms) {
@@ -700,7 +701,8 @@ function applyLang(lang) {
   fillSelect($('themeSel'), THEMES.map((th, i) => [th.id, `${String(i + 1).padStart(2, '0')} ${THEME_NAMES[LANG][i]}`]), store.theme || 'cyber');
   fillSelect($('bgmMood'), MOOD_QUERIES.map(([id], i) => [id, MOOD_NAMES[LANG][i]]), store.bgmLast || 'lofi');
   W.setTrayLabels({ tip: t('tray_tip'), toggle: t('tray_toggle'), reset: t('tray_reset'), quit: t('tray_quit'), taskbar: t('taskbarMode'), mini: t('mini'), char: t('charMode'), full: t('expand'), update: t('updateCheck') });
-  fillSelect($('modeSel'), [['taskbar', t('taskbarMode')], ['mini', t('mini')], ['char', t('charMode')], ['full', t('expand')]], store.mode || 'mini');
+  const modes = [...(supportsTaskbar ? [['taskbar', t('taskbarMode')]] : []), ['mini', t('mini')], ['char', t('charMode')], ['full', t('expand')]];
+  fillSelect($('modeSel'), modes, store.mode || 'mini');
   renderSubs();
   renderUsage();
   renderMini();
@@ -872,7 +874,7 @@ W.onNear((v) => document.body.classList.toggle('near', v));
 document.fonts.ready.then(() => fit());
 document.fonts.addEventListener('loadingdone', () => fit());
 function setMode(m) {
-  mode = ['taskbar', 'mini', 'char', 'full'].includes(m) ? m : 'mini';
+  mode = ['taskbar', 'mini', 'char', 'full'].includes(m) && (m !== 'taskbar' || supportsTaskbar) ? m : 'mini';
   for (const x of ['taskbar', 'mini', 'char', 'full']) document.body.classList.toggle('mode-' + x, x === mode);
   const patch = { mode };
   if (mode !== 'full') patch.compactMode = mode;
@@ -1042,7 +1044,7 @@ function openHotkeySetup() {
 W.onHotkey((name, wasVisible) => {
   if ($('hotkeySetupDialog').open) return;
   if (name === 'toggle') {
-    if (!wasVisible) setMode('taskbar');
+    if (!wasVisible) setMode(supportsTaskbar ? 'taskbar' : 'mini');
     else if (mode === 'taskbar') setMode('mini');
     else if (mode === 'mini') setMode('char');
     else if (mode === 'char') setMode('full');
@@ -1116,6 +1118,8 @@ for (const b of document.querySelectorAll('.brand-btn')) b.onclick = (e) => { e.
 
 // ---------- 시작 ----------
 (async () => {
+  supportsTaskbar = await W.getPlatform() === 'win32';
+  document.body.classList.toggle('no-taskbar-mode', !supportsTaskbar);
   store = await W.getStore();
   applyLang(store.lang || 'ko');
   applyTheme(store.theme || 'cyber');

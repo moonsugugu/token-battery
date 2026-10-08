@@ -1,4 +1,4 @@
-name: Windows release
+name: Desktop release
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing stable version tag (e.g. v1.3.2)'
+        description: 'Existing stable version tag (e.g. v1.3.5)'
         required: true
         type: string
 
@@ -18,11 +18,18 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+          - platform: macos
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
     env:
       RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-      GH_TOKEN: ${{ github.token }}
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     steps:
       - uses: actions/checkout@v4
@@ -36,29 +43,69 @@ jobs:
         run: node tools/verify-release.cjs
       - run: npm ci
       - run: npm test
-      - name: Build installer and update metadata
+      - name: Build Windows installer
+        if: matrix.platform == 'windows'
         run: npm run dist -- --publish never
-      - name: Verify release artifacts
+      - name: Build universal macOS DMG and ZIP
+        if: matrix.platform == 'macos'
+        run: npm run dist:mac -- --publish never
+      - name: Verify Windows release artifacts
+        if: matrix.platform == 'windows'
         run: node tools/verify-release.cjs --artifacts
-      - uses: actions/upload-artifact@v4
+      - name: Verify macOS release artifacts
+        if: matrix.platform == 'macos'
+        run: node tools/verify-release.cjs --mac-artifacts
+      - name: Upload Windows packages
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
         with:
-          name: TokenBattery-${{ env.RELEASE_TAG }}
+          name: TokenBattery-${{ env.RELEASE_TAG }}-windows
           path: |
             dist/*.exe
             dist/*.blockmap
             dist/latest.yml
             dist/SHA256SUMS.txt
           if-no-files-found: error
-      - name: Upload complete release before publishing
-        shell: pwsh
+      - name: Upload macOS packages
+        if: matrix.platform == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: TokenBattery-${{ env.RELEASE_TAG }}-macos
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/latest-mac.yml
+            dist/SHA256SUMS-macos.txt
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: TokenBattery-${{ env.RELEASE_TAG }}-*
+          path: release-assets
+          merge-multiple: true
+      - name: Publish complete release
+        shell: bash
         run: |
-          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null
-          if ($LASTEXITCODE -ne 0) {
-            gh release create $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --draft --title "TokenBattery $env:RELEASE_TAG" --generate-notes
-            if ($LASTEXITCODE -ne 0) { throw 'Could not create release' }
-          }
-          $releaseFiles = @(Get-ChildItem -LiteralPath dist -File | Where-Object { $_.Name -match '\.(exe|blockmap)$' -or $_.Name -in @('latest.yml', 'SHA256SUMS.txt') } | ForEach-Object { $_.FullName })
-          gh release upload $env:RELEASE_TAG @releaseFiles --repo $env:GITHUB_REPOSITORY --clobber
-          if ($LASTEXITCODE -ne 0) { throw 'Could not upload release artifacts' }
-          gh release edit $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --draft=false --latest
-          if ($LASTEXITCODE -ne 0) { throw 'Could not publish release' }
+          cat > release-notes.md <<'EOF'
+          ## Windows
+          Download and run the Windows `.exe` installer below.
+
+          ## macOS
+          Download the universal DMG for Intel and Apple Silicon, open it, and drag TokenBattery to Applications. This build is not signed or notarized; on first launch, Control-click TokenBattery and choose Open.
+
+          Windows installs can update from inside the app. macOS updates are installed by downloading the new DMG and replacing the app in Applications. Your local settings and companion progress are kept.
+          EOF
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --draft --title "TokenBattery $RELEASE_TAG" --notes-file release-notes.md
+          else
+            gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --notes-file release-notes.md
+          fi
+          gh release upload "$RELEASE_TAG" release-assets/* --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest

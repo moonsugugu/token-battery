@@ -1,5 +1,8 @@
 /* TokenBattery visual pass: illustrated stages, expressive cast, and richer surfaces. */
 .card.taskbar { display: none; }
+.no-taskbar-mode .card.taskbar,
+.no-taskbar-mode [data-go="taskbar"],
+.no-taskbar-mode .taskbar-mode { display: none !important; }
 body.mode-taskbar .card.taskbar {
   display: block; margin: 0; padding: 2px 7px; width: 172px;
   border: 1px solid #ffffff24; border-radius: 5px; box-shadow: none;
