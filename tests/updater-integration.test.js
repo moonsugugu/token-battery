@@ -10,7 +10,7 @@ const { NodeHttpExecutor } = require('builder-util/out/nodeHttpExecutor');
 const { ElectronHttpExecutor } = require('electron-updater/out/electronHttpExecutor');
 const { createUpdater } = require('../updater');
 
-test('real NSIS updater checks a feed, verifies downloads and recovers from checksum failure', async (t) => {
+test('real NSIS updater checks a feed, verifies downloads and recovers from checksum failure', { skip: process.platform !== 'win32' }, async (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'token-battery-feed-'));
   const bytes = Buffer.alloc(65536, 'installer fixture');
   const checksum = crypto.createHash('sha512').update(bytes).digest('base64');
