@@ -12,6 +12,7 @@ const Companions = require('./renderer/companions');
 const { TokenUsage } = require('./token-usage');
 const { taskbarBounds } = require('./taskbar');
 const { createUpdater } = require('./updater');
+const Hotkeys = require('./renderer/hotkeys');
 
 const HOME = os.homedir();
 const CODEX_HOME = process.env.CODEX_HOME ? path.resolve(process.env.CODEX_HOME) : path.join(HOME, '.codex');
@@ -117,7 +118,8 @@ const DEFAULT_STORE = {
   companions: { friends: {}, targets: {} },
   tokenLedger: { seen: {}, totals: { claude: 0, codex: 0 }, lastSeen: {} },
   compactMode: 'mini',
-  hotkeys: { toggle: 'F3', full: 'F4' },
+  hotkeys: { ...Hotkeys.defaults },
+  hotkeySetupDone: false,
   scale: { mini: 1, char: 1, full: 1 },
   autostartDefaulted: false, // 설치판에서 '윈도우 시작 시 자동 실행' 기본값(켜짐)을 이미 적용했는지
 };
@@ -131,6 +133,7 @@ async function loadStore() {
   }
   store.companions = Companions.migrate(store.companions || { friends: {}, targets: {} });
   store.tokenLedger ||= { seen: {}, totals: { claude: 0, codex: 0 }, lastSeen: {} };
+  store.hotkeys = Hotkeys.migrate(store.hotkeys);
 }
 let saveTimer = null;
 let storeWrites = Promise.resolve();
@@ -1120,7 +1123,7 @@ let hotkeyStatus = {};
 function registerHotkeys() {
   globalShortcut.unregisterAll();
   hotkeyStatus = {};
-  const hk = { toggle: 'F3', full: 'F4', ...(store.hotkeys || {}) };
+  const hk = { ...Hotkeys.defaults, ...(store.hotkeys || {}) };
   for (const [name, acc] of Object.entries(hk)) {
     if (!acc) continue;
     try {

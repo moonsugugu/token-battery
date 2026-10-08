@@ -10,6 +10,38 @@
 </head>
 <body class="mode-mini theme-cyber">
 
+<dialog class="hotkey-setup" id="hotkeySetupDialog" aria-labelledby="hotkeySetupTitle" aria-describedby="hotkeySetupIntro">
+  <div class="tutorial-progress"><span data-i18n="tutorialTitle"></span><b id="tutorialProgress"></b></div>
+  <section data-tutorial-step="0">
+  <h2 id="hotkeySetupTitle" data-i18n="hkSetupTitle"></h2>
+  <p id="hotkeySetupIntro" data-i18n="hkSetupIntro"></p>
+  <div class="setup-key-row"><span data-i18n="hkFull"></span><button type="button" class="chip hk" data-hk="full" data-i18n-aria-label="hkFull"></button></div>
+  <div class="setup-key-row"><span data-i18n="hkCycleShort"></span><button type="button" class="chip hk" data-hk="toggle" data-i18n-aria-label="hkCycleShort"></button></div>
+  <p class="note" data-i18n="hkSetupCycle"></p>
+  <p class="note" data-i18n="hkHint"></p>
+  <p class="note hk-message" id="hkSetupMsg" role="status" aria-live="polite"></p>
+  <p class="note" data-i18n="hkSetupLater"></p>
+  <button type="button" class="chip ghost" id="btnHotkeyDefaults" data-i18n="hkDefaults"></button>
+  </section>
+  <section class="hidden" data-tutorial-step="1">
+    <h2 id="tutorialModesTitle" data-i18n="tutorialModesTitle"></h2>
+    <p data-i18n="tutorialModesIntro"></p>
+    <div class="tutorial-mode"><b data-i18n="taskbarMode"></b><span data-i18n="tutorialTaskbar"></span></div>
+    <div class="tutorial-mode"><b data-i18n="mini"></b><span data-i18n="tutorialMini"></span></div>
+    <div class="tutorial-mode"><b data-i18n="charMode"></b><span data-i18n="tutorialCharacter"></span></div>
+    <div class="tutorial-mode"><b data-i18n="expand"></b><span data-i18n="tutorialFull"></span></div>
+    <p class="note" data-i18n="tutorialTray"></p>
+  </section>
+  <section class="hidden" data-tutorial-step="2">
+    <h2 id="tutorialConnectTitle" data-i18n="tutorialConnectTitle"></h2>
+    <div class="tutorial-mode"><b>Codex</b><span data-i18n="tutorialCodex"></span></div>
+    <div class="tutorial-mode"><b>Claude</b><span data-i18n="tutorialClaude"></span></div>
+    <div class="tutorial-mode"><b data-i18n="settings"></b><span data-i18n="tutorialSettings"></span></div>
+    <p class="note" data-i18n="tutorialPreserve"></p>
+  </section>
+  <div class="setup-actions"><button type="button" class="chip ghost" id="btnTutorialSkip" data-i18n="tutorialSkip"></button><button type="button" class="chip ghost hidden" id="btnTutorialBack" data-i18n="tutorialBack"></button><button type="button" class="chip" id="btnTutorialNext" data-i18n="tutorialNext"></button><button type="button" class="chip hidden" id="btnHotkeySetupDone" data-i18n="hkSetupDone"></button></div>
+</dialog>
+
 <!-- ===== 작업표시줄: 활성 서비스마다 한 줄 ===== -->
 <div class="card taskbar" id="taskbarCard" tabindex="0" role="button" data-i18n-title="taskbarHelp" data-i18n-aria-label="taskbarHelp">
   <div id="taskbarRows"></div>
@@ -72,6 +104,7 @@
     <span id="updateBannerText"></span><button class="chip" id="btnUpdateBanner" data-i18n="updateView"></button>
   </section>
   <section class="panel settings hidden" id="settings">
+    <div class="row"><b data-i18n="tutorialTitle"></b><button type="button" class="chip" id="btnTutorialReplay" data-i18n="tutorialReplay"></button></div>
     <section class="update-panel" id="updatePanel">
       <div class="row"><b data-i18n="updateTitle"></b><span class="smeta" id="appVersion"></span></div>
       <p class="note" id="updateStatus" role="status" aria-live="polite"></p>
@@ -116,8 +149,8 @@
       <label><input type="checkbox" class="lvl" value="95"> 95%</label>
     </div>
     <div class="row"><span data-i18n="hotkeys"></span> <span class="smeta" data-i18n="hkHint"></span></div>
-    <div class="row indent"><span class="lbl" data-i18n="hkToggle"></span><button class="chip hk" data-hk="toggle"></button></div>
-    <div class="row indent"><span class="lbl" data-i18n="hkFull"></span><button class="chip hk" data-hk="full"></button></div>
+    <div class="row indent"><span class="lbl" data-i18n="hkFull"></span><button class="chip hk" data-hk="full" data-i18n-aria-label="hkFull"></button></div>
+    <div class="row indent"><span class="lbl" data-i18n="hkToggle"></span><button class="chip hk" data-hk="toggle" data-i18n-aria-label="hkToggle"></button></div>
     <div class="note" id="hkMsg"></div>
     <label class="row"><span data-i18n="opacity"></span> <input type="range" id="opacity" min="0.4" max="1" step="0.02"></label>
     <label class="row"><input type="checkbox" id="autostart"> <span data-i18n="autostart"></span></label>
@@ -285,6 +318,7 @@
   <div class="grip gl" data-grip="left" data-i18n-title="resize"></div><div class="grip gr" data-grip="right" data-i18n-title="resize"></div>
 </div>
 <script src="i18n.js"></script>
+<script src="hotkeys.js"></script>
 <script src="companions.js"></script>
 <script src="characters.js"></script>
 <script src="app.js"></script>

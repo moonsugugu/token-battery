@@ -660,3 +660,91 @@ const I18N_BOND = {
   },
 };
 for (const lang of Object.keys(I18N_BOND)) Object.assign(I18N[lang], I18N_BOND[lang]);
+
+const I18N_HOTKEY_SETUP = {
+  ko: {
+    hkSetupTitle: '먼저 단축키를 골라주세요', hkSetupIntro: '기본은 F7 숨기기/보이기, F8 모드 전환이에요. 키 버튼을 누른 뒤 원하는 키를 눌러 바꿀 수 있어요.',
+    hkCycleShort: '모드 전환', hkSetupCycle: '작업표시줄 → 미니 → 캐릭터 → 전체 → 숨기기 순서로 바뀌어요.',
+    hkSetupLater: '설정·로그인·친구 성장 기록은 그대로 유지해요. 단축키는 나중에도 ⚙ 설정에서 바꿀 수 있어요.',
+    hkDefaults: '기본 F7 · F8로', hkSetupDone: '이 키로 시작하기', hkDuplicate: '숨기기와 모드 전환은 서로 다른 키로 골라주세요.',
+  },
+  en: {
+    hkSetupTitle: 'Choose your shortcuts', hkSetupIntro: 'F7 shows/hides the widget. F8 cycles modes. Click a key button, then press your preferred key to change it.',
+    hkCycleShort: 'Cycle modes', hkSetupCycle: 'Taskbar → mini → character → full → hide.',
+    hkSetupLater: 'Your settings, login and friendship progress are kept. You can change shortcuts later in ⚙ Settings.',
+    hkDefaults: 'Use F7 · F8', hkSetupDone: 'Start with these keys', hkDuplicate: 'Choose different keys for show/hide and mode cycling.',
+  },
+  ja: {
+    hkSetupTitle: 'ショートカットを選んでください', hkSetupIntro: '初期設定はF7で表示/非表示、F8でモード切替です。キーボタンを押してから好きなキーを押すと変更できます。',
+    hkCycleShort: 'モード切替', hkSetupCycle: 'タスクバー → ミニ → キャラクター → 全体 → 非表示の順です。',
+    hkSetupLater: '設定・ログイン・友達の成長を保持します。後から⚙設定でもキーを変更できます。',
+    hkDefaults: 'F7・F8に戻す', hkSetupDone: 'このキーで開始', hkDuplicate: '表示/非表示とモード切替には異なるキーを選んでください。',
+  },
+  zh: {
+    hkSetupTitle: '先选择快捷键', hkSetupIntro: '默认F7显示/隐藏，F8切换模式。点击按键按钮，再按下想使用的键即可更改。',
+    hkCycleShort: '切换模式', hkSetupCycle: '任务栏 → 迷你 → 角色 → 完整 → 隐藏。',
+    hkSetupLater: '保留设置、登录和好友成长记录。以后也可在⚙设置中更改快捷键。',
+    hkDefaults: '恢复F7 · F8', hkSetupDone: '使用这些键开始', hkDuplicate: '显示/隐藏与模式切换请选择不同的按键。',
+  },
+  es: {
+    hkSetupTitle: 'Elige tus atajos', hkSetupIntro: 'F7 muestra/oculta el widget. F8 cambia de modo. Pulsa un botón y luego la tecla que prefieras para cambiarla.',
+    hkCycleShort: 'Cambiar modo', hkSetupCycle: 'Barra de tareas → mini → personaje → completo → ocultar.',
+    hkSetupLater: 'Se conservan ajustes, sesión y progreso de amistad. Puedes cambiar los atajos después en ⚙ Ajustes.',
+    hkDefaults: 'Usar F7 · F8', hkSetupDone: 'Empezar con estas teclas', hkDuplicate: 'Elige teclas distintas para mostrar/ocultar y cambiar de modo.',
+  },
+};
+for (const lang of Object.keys(I18N_HOTKEY_SETUP)) Object.assign(I18N[lang], I18N_HOTKEY_SETUP[lang]);
+
+const I18N_TUTORIAL = {
+  ko: {
+    tutorialTitle: '토큰배터리 사용법', tutorialNext: '다음', tutorialBack: '이전', tutorialSkip: '건너뛰기', tutorialReplay: '다시 보기', hkSetupDone: '시작하기',
+    tutorialModesTitle: '작업에 맞는 크기로', tutorialModesIntro: '모드 전환키를 누르거나 위젯의 버튼·트레이 메뉴에서 모드를 골라보세요.',
+    tutorialTaskbar: '시계 옆에서 5시간·주간 잔량을 작게 확인해요.', tutorialMini: '퍼센트와 리셋 시간만 간단히 보여줘요.', tutorialCharacter: '캐릭터와 함께 남은 한도를 확인해요.', tutorialFull: '상세 사용량, 구독 결제일, 코딩 BGM을 한곳에서 봐요.',
+    tutorialTray: '숨겨도 앱은 계속 실행돼요. 숨기기/보이기 키나 시계 옆 트레이 아이콘으로 다시 열 수 있어요.',
+    tutorialConnectTitle: '사용량을 연결해보세요', tutorialCodex: '이 PC에서 Codex를 사용하면 로컬 기록에서 사용 한도를 자동으로 읽어요.',
+    tutorialClaude: 'Claude Code 로그인 정보를 먼저 확인해요. 연결이 없으면 ⚙ 설정에서 claude.ai 로그인 또는 직접 입력을 선택하세요.',
+    tutorialSettings: '⚙에서 디자인·단축키·앱 업데이트를 바꿔요. 이 PC의 Claude Code·Codex 사용 토큰으로 친구도 성장해요.',
+    tutorialPreserve: '업데이트해도 기존 설정·로그인·구독·친구 기록을 유지해요. 이 사용법은 ⚙ 설정에서 다시 볼 수 있어요.',
+  },
+  en: {
+    tutorialTitle: 'TokenBattery guide', tutorialNext: 'Next', tutorialBack: 'Back', tutorialSkip: 'Skip', tutorialReplay: 'Show guide', hkSetupDone: 'Get started',
+    tutorialModesTitle: 'Choose a size for your work', tutorialModesIntro: 'Use your mode shortcut, widget buttons or tray menu to choose a view.',
+    tutorialTaskbar: 'Small 5-hour and weekly balances beside the clock.', tutorialMini: 'Just percentages and reset times.', tutorialCharacter: 'Check remaining limits with your characters.', tutorialFull: 'Detailed usage, subscription dates and coding BGM together.',
+    tutorialTray: 'The app keeps running while hidden. Use your show/hide key or the tray icon to bring it back.',
+    tutorialConnectTitle: 'Connect your usage', tutorialCodex: 'Use Codex on this PC to load limits automatically from local records.',
+    tutorialClaude: 'Claude Code credentials are checked first. If needed, choose claude.ai login or manual entry in ⚙ Settings.',
+    tutorialSettings: 'Change designs, shortcuts and app updates in ⚙ Settings. Local Claude Code and Codex tokens also grow your friends.',
+    tutorialPreserve: 'Updates keep settings, login, subscriptions and friend progress. Reopen this guide from ⚙ Settings.',
+  },
+  ja: {
+    tutorialTitle: '使い方ガイド', tutorialNext: '次へ', tutorialBack: '戻る', tutorialSkip: 'スキップ', tutorialReplay: 'もう一度見る', hkSetupDone: '始める',
+    tutorialModesTitle: '作業に合うサイズで', tutorialModesIntro: 'モード切替キー、ウィジェットのボタン、トレイメニューで表示を選べます。',
+    tutorialTaskbar: '時計の隣に5時間・週間の残量を表示。', tutorialMini: '割合とリセット時刻だけを表示。', tutorialCharacter: 'キャラクターと残りの上限を確認。', tutorialFull: '詳しい使用量、支払日、BGMをまとめて表示。',
+    tutorialTray: '非表示でも起動中です。表示キーやトレイアイコンで戻せます。',
+    tutorialConnectTitle: '使用量を接続しましょう', tutorialCodex: 'このPCでCodexを使うと、ローカル記録から上限を自動取得します。',
+    tutorialClaude: 'Claude Codeのログイン情報を先に確認します。必要なら⚙設定からclaude.aiログインか手動入力を選んでください。',
+    tutorialSettings: '⚙設定でデザイン・キー・アプリ更新を変更できます。ローカルの使用トークンで友達も成長します。',
+    tutorialPreserve: '更新後も設定・ログイン・支払日・友達の記録を保持します。このガイドは⚙設定から再表示できます。',
+  },
+  zh: {
+    tutorialTitle: '使用教程', tutorialNext: '下一步', tutorialBack: '上一步', tutorialSkip: '跳过', tutorialReplay: '再次查看', hkSetupDone: '开始使用',
+    tutorialModesTitle: '选择适合工作的大小', tutorialModesIntro: '使用模式快捷键、组件按钮或托盘菜单选择视图。',
+    tutorialTaskbar: '在时钟旁显示5小时和每周余量。', tutorialMini: '仅显示百分比和重置时间。', tutorialCharacter: '和角色一起查看剩余额度。', tutorialFull: '查看详细用量、订阅日期和编程BGM。',
+    tutorialTray: '隐藏后应用仍在运行，可用显示快捷键或托盘图标打开。',
+    tutorialConnectTitle: '连接你的用量', tutorialCodex: '在此电脑使用Codex后，会从本地记录自动读取额度。',
+    tutorialClaude: '优先检查Claude Code登录信息。需要时，在⚙设置中选择claude.ai登录或手动输入。',
+    tutorialSettings: '在⚙设置中更改外观、快捷键和应用更新。本地Claude Code和Codex令牌也会让好友成长。',
+    tutorialPreserve: '更新保留设置、登录、订阅和好友记录，可在⚙设置中再次查看教程。',
+  },
+  es: {
+    tutorialTitle: 'Guía de TokenBattery', tutorialNext: 'Siguiente', tutorialBack: 'Atrás', tutorialSkip: 'Omitir', tutorialReplay: 'Ver guía', hkSetupDone: 'Empezar',
+    tutorialModesTitle: 'Elige el tamaño que necesitas', tutorialModesIntro: 'Usa el atajo de modo, los botones del widget o el menú de la bandeja.',
+    tutorialTaskbar: 'Límites de 5 horas y semanales junto al reloj.', tutorialMini: 'Solo porcentajes y horas de reinicio.', tutorialCharacter: 'Consulta los límites con tus personajes.', tutorialFull: 'Uso detallado, fechas de suscripción y BGM juntos.',
+    tutorialTray: 'La app sigue activa al ocultarla. Usa el atajo o el icono de la bandeja para volver.',
+    tutorialConnectTitle: 'Conecta tu uso', tutorialCodex: 'Usa Codex en este PC para cargar límites desde los registros locales.',
+    tutorialClaude: 'Primero se comprueba la sesión de Claude Code. Si hace falta, elige iniciar sesión en claude.ai o entrada manual en ⚙ Ajustes.',
+    tutorialSettings: 'Cambia diseños, atajos y actualizaciones en ⚙ Ajustes. Los tokens locales de Claude Code y Codex hacen crecer a tus amigos.',
+    tutorialPreserve: 'Las actualizaciones conservan ajustes, sesión, suscripciones y progreso. Puedes volver a ver la guía en ⚙ Ajustes.',
+  },
+};
+for (const lang of Object.keys(I18N_TUTORIAL)) Object.assign(I18N[lang], I18N_TUTORIAL[lang]);
